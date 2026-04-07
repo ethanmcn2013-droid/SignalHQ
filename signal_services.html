@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signal Services | When You Need to Build It</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', 
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#0A0A0A',
+                        intelligence: '#4F46E5',
+                        'intelligence-light': '#818cf8',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out 3s infinite',
+                        'ring-pulse': 'ring-pulse 2.5s ease-in-out infinite',
+                        'spin-slow': 'spin-slow 4s linear infinite',
+                        'progress-fill': 'progress-fill 4s ease-in-out infinite',
+                        'code-scroll': 'code-scroll 3s ease-in-out infinite',
+                        'ui-render': 'ui-render 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        'ring-pulse': {
+                            '0%': { transform: 'scale(1)', opacity: '1' },
+                            '50%': { transform: 'scale(1.15)', opacity: '0.7' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        'spin-slow': {
+                            'from': { transform: 'rotate(0deg)' },
+                            'to': { transform: 'rotate(360deg)' },
+                        },
+                        'progress-fill': {
+                            '0%': { width: '10%' },
+                            '50%': { width: '100%' },
+                            '100%': { width: '10%' },
+                        },
+                        'code-scroll': {
+                            '0%, 100%': { transform: 'translateY(0)', opacity: '0.5' },
+                            '50%': { transform: 'translateY(-10px)', opacity: '1' },
+                        },
+                        'ui-render': {
+                            '0%, 100%': { opacity: '0.3', transform: 'scale(0.98)' },
+                            '50%': { opacity: '1', transform: 'scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* --- Scroll Reveal Utilities --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: opacity, transform;
+        }
+        .reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+        .delay-400 { transition-delay: 400ms; }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid transparent;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        #navbar.scrolled {
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark #navbar.scrolled {
+            background: rgba(10, 10, 10, 0.85);
+            border-bottom-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .dark .glass {
+            background: rgba(10, 10, 10, 0.5);
+        }
+        
+        .glass-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(249, 250, 251, 1) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            will-change: transform;
+        }
+
+        .dark .glass-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: none;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(79, 70, 229, 0.3);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(243, 244, 246, 1) 100%);
+            box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.15);
+        }
+
+        .dark .glass-card:hover {
+            border-color: rgba(79, 70, 229, 0.4);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.15);
+        }
+
+        /* Dynamic Grid Background */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+        }
+
+        .dark .bg-grid {
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+
+        /* Ambient Cursor Glow */
+        #glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            transition: opacity 0.5s ease;
+        }
+
+        .dark #glow {
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, rgba(10, 10, 10, 0) 70%);
+        }
+
+        /* Clean Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9FAFB;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D1D5DB;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9CA3AF;
+        }
+        .dark ::-webkit-scrollbar-track { background: #0A0A0A; }
+        .dark ::-webkit-scrollbar-thumb { background: #333; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* --- SIGNAL LOGO INTEGRATION STYLES --- */
+        .brand-group {
+            display: flex;
+            flex-direction: column;
+            width: max-content;
+        }
+
+        .word-mark {
+            font-family: 'Inter', sans-serif;
+            font-size: 2.75rem;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1.1; 
+            color: #111827; 
+            background: linear-gradient(180deg, #111827 0%, #4B5563 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding-bottom: 16px; 
+            margin-bottom: -16px; 
+            transition: all 0.4s ease;
+        }
+
+        .dark .word-mark {
+            color: #ffffff;
+            background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.7) 100%);
+            -webkit-background-clip: text;
+        }
+
+        .sub-mark {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.55rem;
+            font-weight: 500;
+            color: rgba(17, 24, 39, 0.45); 
+            text-transform: uppercase;
+            width: 100%;
+            display: flex;
+            justify-content: space-between; 
+            margin-top: 6px; 
+            user-select: none;
+            transition: color 0.4s ease;
+        }
+
+        .dark .sub-mark {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* --- APPLE-STYLE SHIMMER EFFECT --- */
+        .shimmer-text {
+            color: #9CA3AF; 
+            background: linear-gradient(110deg, #9CA3AF 40%, #FFFFFF 50%, #9CA3AF 60%);
+            background-size: 300% auto; 
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer-text 15s linear infinite; 
+        }
+
+        .dark .shimmer-text {
+            background: linear-gradient(110deg, rgba(255,255,255,0.4) 40%, #FFFFFF 50%, rgba(255,255,255,0.4) 60%);
+            -webkit-background-clip: text;
+        }
+
+        .shimmer-text-hero {
+            color: #111827; 
+            background: linear-gradient(110deg, #111827 40%, #E5E7EB 50%, #111827 60%);
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer-text 15s linear infinite;
+        }
+
+        .dark .shimmer-text-hero {
+            color: #ffffff;
+            background: linear-gradient(110deg, rgba(255,255,255,0.8) 40%, #FFFFFF 50%, rgba(255,255,255,0.8) 60%);
+            -webkit-background-clip: text;
+        }
+
+        @keyframes shimmer-text {
+            0% { background-position: 100% center; }
+            22% { background-position: 0% center; }
+            100% { background-position: 0% center; }
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-intelligence selection:text-white relative bg-white text-gray-900 dark:bg-obsidian dark:text-white">
+
+    <!-- Ambient Glow Element -->
+    <div id="glow"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            
+            <!-- Scaled Wordmark Lockup -->
+            <a href="index.html" class="block w-[115px] h-[56px] relative z-10 focus:outline-none">
+                <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.9); transform-origin: top left; position: absolute; top: 0; left: 0;">
+                    <div class="brand-group">
+                        <div class="word-mark">Signal</div>
+                        <div class="sub-mark tracking-target">System Intelligence</div>
+                    </div>
+                </div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
+                <a href="index.html#suite" class="hover:text-gray-900 dark:hover:text-white transition-colors">Suite</a>
+                <a href="index.html#how-it-works" class="hover:text-gray-900 dark:hover:text-white transition-colors">How it Works</a>
+                <a href="signal_services.html" class="text-gray-900 dark:text-white font-medium transition-colors">Services</a>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <!-- Fluid Dark Mode Toggle -->
+                <button id="theme-toggle" class="p-2 rounded-full border border-gray-200 dark:border-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-all focus:outline-none">
+                    <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+                    <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
+                </button>
+
+                <a href="#cta" class="text-sm font-medium text-white dark:text-black bg-gray-900 dark:bg-white transition-all px-4 py-2 rounded-full hover:bg-gray-800 dark:hover:bg-white/90 hidden sm:block shadow-sm">Book Consultation</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. PRODUCT HERO SECTION -->
+    <section class="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 overflow-hidden">
+        <!-- Background Grid -->
+        <div class="absolute inset-0 bg-grid z-[-2]"></div>
+        
+        <div class="max-w-5xl mx-auto px-6 text-center z-10 w-full">
+            <div class="reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 text-xs font-medium text-gray-800 dark:text-white mb-8 shadow-sm">
+                <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+                Signal Services
+            </div>
+            
+            <h1 class="reveal delay-100 text-5xl md:text-7xl lg:text-8xl font-medium tracking-tighter mb-6 text-gray-900 dark:text-white">
+                When You Need to Build It <br><span class="shimmer-text-hero">— We Step In.</span>
+            </h1>
+            
+            <p class="reveal delay-200 text-lg md:text-xl text-gray-600 dark:text-white/60 max-w-2xl mx-auto mb-16 leading-relaxed font-light">
+                Turn your Signal blueprints into reality. We offer premium, done-for-you System Execution and Web Development.
+            </p>
+            
+            <!-- Abstract "Blueprint to Reality" Representation -->
+            <div class="reveal delay-300 relative w-full h-72 md:h-96 rounded-3xl glass-card overflow-hidden border border-gray-200 dark:border-white/10 bg-white/50 dark:bg-obsidian/50 shadow-2xl flex items-center justify-center">
+                <!-- Inner Infinite Grid -->
+                <div class="absolute inset-0 bg-grid opacity-30 dark:opacity-20 scale-150 transform origin-center"></div>
+                
+                <!-- Left Side: The Blueprint (Wireframe) -->
+                <div class="absolute left-[15%] w-48 h-48 border border-dashed border-gray-400 dark:border-gray-600 rounded-2xl transform -rotate-12 translate-x-10 flex flex-col justify-between p-4 opacity-50 pointer-events-none">
+                    <div class="w-1/2 h-2 rounded-full border border-dashed border-gray-400 dark:border-gray-600"></div>
+                    <div class="w-full h-2 rounded-full border border-dashed border-gray-400 dark:border-gray-600"></div>
+                    <div class="w-3/4 h-2 rounded-full border border-dashed border-gray-400 dark:border-gray-600"></div>
+                    <div class="w-full h-12 rounded-lg border border-dashed border-gray-400 dark:border-gray-600 mt-auto"></div>
+                </div>
+
+                <!-- Connective execution beam -->
+                <div class="absolute w-32 h-1 bg-gradient-to-r from-transparent via-intelligence to-transparent animate-pulse z-10 pointer-events-none"></div>
+
+                <!-- Right Side: The Reality (Solid execution) -->
+                <div class="absolute right-[15%] w-48 h-48 bg-white dark:bg-obsidian border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl transform rotate-6 -translate-x-10 flex flex-col justify-between p-4 z-20 animate-float">
+                    <!-- UI Elements -->
+                    <div class="w-1/2 h-2 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                    <div class="w-full h-2 rounded-full bg-gray-200 dark:bg-gray-800"></div>
+                    <div class="w-3/4 h-2 rounded-full bg-gray-200 dark:bg-gray-800"></div>
+                    <div class="w-full h-12 rounded-lg bg-intelligence mt-auto shadow-[0_0_15px_rgba(79,70,229,0.3)] flex items-center justify-center">
+                        <i data-lucide="check" class="w-5 h-5 text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. CATEGORY A: SYSTEM EXECUTION -->
+    <section class="py-32 relative bg-white dark:bg-obsidian overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                
+                <!-- Text Content -->
+                <div class="reveal order-2 lg:order-1">
+                    <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6 text-gray-900 dark:text-white">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-medium tracking-tight mb-6 text-gray-900 dark:text-white">System Execution</h2>
+                    <p class="text-lg text-gray-600 dark:text-white/60 leading-relaxed font-light mb-10">
+                        When systems become complex, we step in to lead execution, coordinate stakeholders, and ensure delivery.
+                    </p>
+                    
+                    <div class="glass-card p-8 rounded-3xl border border-gray-200 dark:border-white/10 bg-white/50 dark:bg-obsidian/50">
+                        <h3 class="text-xl font-medium mb-6 text-gray-900 dark:text-white flex items-center gap-3">
+                            <div class="w-8 h-8 rounded bg-intelligence/10 flex items-center justify-center"><i data-lucide="zap" class="w-4 h-4 text-intelligence"></i></div>
+                            Why Signal Services Are Different
+                        </h3>
+                        <ul class="space-y-5">
+                            <li class="flex items-start">
+                                <div class="mt-0.5 mr-4 w-6 h-6 rounded-full bg-intelligence/10 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="check" class="w-3.5 h-3.5 text-intelligence"></i>
+                                </div>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium tracking-wide">We already understand your system</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-0.5 mr-4 w-6 h-6 rounded-full bg-intelligence/10 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="check" class="w-3.5 h-3.5 text-intelligence"></i>
+                                </div>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium tracking-wide">No onboarding required</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-0.5 mr-4 w-6 h-6 rounded-full bg-intelligence/10 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="check" class="w-3.5 h-3.5 text-intelligence"></i>
+                                </div>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium tracking-wide">Built from your actual workflows</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Visual Content (Dynamic Gantt/Progress) -->
+                <div class="reveal delay-200 order-1 lg:order-2 glass-card h-[400px] rounded-3xl p-8 flex flex-col justify-center gap-6 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-grid opacity-30 dark:opacity-20 scale-150 pointer-events-none"></div>
+                    
+                    <!-- Progress Bar 1 -->
+                    <div class="relative z-10 w-full">
+                        <div class="flex justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
+                            <span>Phase 1: Architecture</span>
+                            <span class="text-intelligence">100%</span>
+                        </div>
+                        <div class="w-full h-4 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden">
+                            <div class="h-full bg-gray-400 dark:bg-gray-600 rounded-full w-full"></div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar 2 (Animated) -->
+                    <div class="relative z-10 w-full transform group-hover:scale-105 transition-transform duration-500">
+                        <div class="flex justify-between text-xs font-semibold text-gray-900 dark:text-white mb-2 uppercase tracking-wider">
+                            <span>Phase 2: Execution (Active)</span>
+                            <span class="text-intelligence animate-pulse">In Progress</span>
+                        </div>
+                        <div class="w-full h-6 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden shadow-inner border border-gray-300 dark:border-white/5">
+                            <div class="h-full bg-intelligence rounded-full shadow-[0_0_15px_rgba(79,70,229,0.5)] animate-progress-fill relative">
+                                <!-- Glint effect on bar -->
+                                <div class="absolute top-0 bottom-0 right-0 w-10 bg-gradient-to-r from-transparent to-white/40"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar 3 -->
+                    <div class="relative z-10 w-full opacity-50">
+                        <div class="flex justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
+                            <span>Phase 3: Deployment</span>
+                            <span>Pending</span>
+                        </div>
+                        <div class="w-full h-4 bg-gray-200 dark:bg-white/10 rounded-full border border-dashed border-gray-400 dark:border-gray-600"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. CATEGORY B: WEB DEVELOPMENT -->
+    <section class="py-32 relative bg-gray-50/50 dark:bg-white/[0.02] border-y border-gray-200 dark:border-white/5 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                
+                <!-- Visual Content (Code to UI Abstract) -->
+                <div class="reveal glass-card h-[400px] rounded-3xl p-8 relative overflow-hidden group flex">
+                    <div class="absolute inset-0 bg-grid opacity-30 dark:opacity-20 scale-150 pointer-events-none"></div>
+                    
+                    <!-- Code Side -->
+                    <div class="w-1/2 h-full border-r border-dashed border-gray-300 dark:border-white/10 pr-6 pt-4 relative z-10 flex flex-col gap-3">
+                        <div class="text-[10px] font-mono text-gray-400 dark:text-gray-500 mb-2">index.tsx</div>
+                        <div class="h-3 w-3/4 bg-gray-300 dark:bg-gray-700 rounded animate-code-scroll"></div>
+                        <div class="h-3 w-full bg-blue-300 dark:bg-blue-900/50 rounded animate-code-scroll delay-100"></div>
+                        <div class="h-3 w-5/6 bg-intelligence/40 rounded animate-code-scroll delay-200"></div>
+                        <div class="h-3 w-1/2 bg-gray-300 dark:bg-gray-700 rounded animate-code-scroll delay-300"></div>
+                        <div class="h-3 w-4/5 bg-gray-300 dark:bg-gray-700 rounded animate-code-scroll delay-100"></div>
+                    </div>
+
+                    <!-- UI Side -->
+                    <div class="w-1/2 h-full pl-6 flex items-center justify-center relative z-10">
+                        <div class="w-full bg-white dark:bg-obsidian border border-gray-200 dark:border-white/20 rounded-xl shadow-xl p-4 animate-ui-render group-hover:scale-110 transition-transform duration-500">
+                            <!-- Minimal UI Mockup -->
+                            <div class="flex gap-2 mb-4">
+                                <div class="w-2 h-2 rounded-full bg-red-400"></div>
+                                <div class="w-2 h-2 rounded-full bg-amber-400"></div>
+                                <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                            </div>
+                            <div class="w-1/3 h-2 bg-gray-200 dark:bg-gray-700 rounded-full mb-4"></div>
+                            <div class="w-full h-16 bg-gray-100 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/5 mb-4 flex items-center justify-center">
+                                <i data-lucide="image" class="w-6 h-6 text-gray-300 dark:text-white/20"></i>
+                            </div>
+                            <div class="w-full h-8 bg-intelligence rounded-md shadow-md"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Text Content & Tiered Cards -->
+                <div class="reveal delay-200 flex flex-col justify-center">
+                    <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6 text-gray-900 dark:text-white">
+                        <i data-lucide="code" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-medium tracking-tight mb-8 text-gray-900 dark:text-white">Web Development</h2>
+                    
+                    <div class="space-y-4">
+                        <!-- Starter Build -->
+                        <div class="glass-card p-6 rounded-2xl border border-gray-200 dark:border-white/10 group relative transition-transform hover:translate-x-2 cursor-default">
+                            <h4 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="file-text" class="w-5 h-5 text-gray-400 dark:text-white/40 group-hover:text-intelligence transition-colors"></i> 
+                                Starter Build
+                            </h4>
+                            <p class="text-gray-600 dark:text-white/60 text-sm leading-relaxed font-light ml-7">High-quality landing pages and simple sites, delivered fast.</p>
+                        </div>
+                        
+                        <!-- Growth Build -->
+                        <div class="glass-card p-6 rounded-2xl border border-gray-200 dark:border-white/10 group relative transition-transform hover:translate-x-2 cursor-default">
+                            <h4 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="trending-up" class="w-5 h-5 text-gray-400 dark:text-white/40 group-hover:text-intelligence transition-colors"></i> 
+                                Growth Build
+                            </h4>
+                            <p class="text-gray-600 dark:text-white/60 text-sm leading-relaxed font-light ml-7">Full websites with interactive features and performance optimisation.</p>
+                        </div>
+
+                        <!-- System Build -->
+                        <div class="glass-card p-6 rounded-2xl border border-intelligence/20 dark:border-intelligence/30 group relative transition-transform hover:translate-x-2 cursor-default overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-intelligence/5 to-transparent pointer-events-none opacity-50"></div>
+                            <h4 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white flex items-center gap-2 relative z-10">
+                                <i data-lucide="layers" class="w-5 h-5 text-intelligence"></i> 
+                                System Build
+                            </h4>
+                            <p class="text-gray-600 dark:text-white/60 text-sm leading-relaxed font-light ml-7 relative z-10">Advanced web applications and internal tools, built directly from your Signal designs.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. DIFFERENTIATOR: SEAMLESS HANDOFF -->
+    <section class="py-32 relative bg-white dark:bg-obsidian">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <div class="reveal inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 mb-8">
+                <i data-lucide="arrow-right-left" class="w-8 h-8 text-gray-900 dark:text-white"></i>
+            </div>
+            <h2 class="reveal delay-100 text-3xl md:text-5xl font-medium tracking-tight leading-tight mb-8 text-gray-900 dark:text-white">
+                The Seamless Handoff
+            </h2>
+            <p class="reveal delay-200 text-lg text-gray-600 dark:text-white/50 font-light leading-relaxed mb-10">
+                Traditional agencies require weeks of paid onboarding just to understand your business. Because you are already mapping your workflows and timelines in the free Signal software suite, the transition from internal planning to hiring Signal experts is instantaneous. <strong>We already understand your roadmap.</strong>
+            </p>
+            <div class="reveal delay-300 flex justify-center items-center gap-4 text-sm font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                <span>Signal Platform</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                <span class="text-gray-900 dark:text-white">Signal Services</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. FINAL CTA SECTION -->
+    <section id="cta" class="py-40 relative border-t border-gray-200 dark:border-white/5 overflow-hidden bg-gray-50 dark:bg-transparent">
+        <!-- Deep Space Gradient -->
+        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[800px] h-[500px] bg-intelligence opacity-10 dark:opacity-20 blur-[150px] rounded-[100%] pointer-events-none"></div>
+        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[400px] h-[300px] bg-black dark:bg-white opacity-5 blur-[100px] rounded-[100%] pointer-events-none"></div>
+
+        <div class="max-w-3xl mx-auto px-6 text-center relative z-10">
+            <h2 class="reveal text-5xl md:text-7xl font-medium tracking-tighter mb-6 text-gray-900 dark:text-white">The blueprint is ready.<br><span class="shimmer-text">Let's build it.</span></h2>
+            <p class="reveal delay-100 text-xl text-gray-600 dark:text-white/60 mb-12 font-light">Partner with Signal's elite engineers and system execution experts today.</p>
+            
+            <div class="reveal delay-200">
+                <a href="#" class="inline-flex items-center justify-center px-12 py-4 bg-gray-900 dark:bg-white text-white dark:text-black font-medium rounded-full hover:bg-gray-800 dark:hover:bg-white/90 transition-all text-lg shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_0_60px_rgba(255,255,255,0.3)]">
+                    Start Building Your System
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Minimal Footer -->
+    <footer class="py-8 border-t border-gray-200 dark:border-white/5 bg-white dark:bg-[#050505] relative z-10 transition-colors">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Scaled Wordmark Lockup -->
+            <a href="index.html" class="block w-[100px] h-[44px] relative focus:outline-none">
+                <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.75); transform-origin: top left; position: absolute; top: 0; left: 0;">
+                    <div class="brand-group">
+                        <div class="word-mark">Signal</div>
+                        <div class="sub-mark tracking-target">System Intelligence</div>
+                    </div>
+                </div>
+            </a>
+            
+            <div class="flex items-center gap-8 text-sm text-gray-500 dark:text-white/40">
+                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Documentation</a>
+                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Ethics</a>
+                <a href="signal_services.html" class="text-gray-900 dark:text-white font-medium transition-colors">Consulting</a>
+                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Contact</a>
+            </div>
+            
+            <div class="text-xs text-gray-400 dark:text-white/30">
+                &copy; 2026 Signal Intelligence. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // --- FLUID DARK MODE TOGGLE ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+        } else {
+            htmlElement.classList.remove('dark');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            if (htmlElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // --- SCROLL-TRIGGERED REVEAL ANIMATIONS ---
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { 
+            threshold: 0.1, 
+            rootMargin: "0px 0px -50px 0px" 
+        });
+
+        document.querySelectorAll('.reveal').forEach((el) => {
+            revealObserver.observe(el);
+        });
+
+        // --- PERFECT WIDTH TEXT TRACKING ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.tracking-target').forEach(subMark => {
+                const text = subMark.textContent.toUpperCase();
+                subMark.innerHTML = ''; 
+                text.split('').forEach(char => {
+                    const span = document.createElement('span');
+                    span.innerHTML = char === ' ' ? '&nbsp;' : char; 
+                    subMark.appendChild(span);
+                });
+            });
+        });
+
+        // --- INTERACTIVE 3D TILT ON PRODUCT CARDS ---
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * -6; 
+                const rotateY = ((x - centerX) / centerX) * 6;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)`;
+            });
+        });
+
+        // --- AMBIENT GLOW MOUSE TRACKING ---
+        const glow = document.getElementById('glow');
+        let isMouseMoving = false;
+        let glowTimeout;
+
+        document.addEventListener('mousemove', (e) => {
+            isMouseMoving = true;
+            
+            requestAnimationFrame(() => {
+                glow.style.left = e.clientX + 'px';
+                glow.style.top = e.clientY + 'px';
+                glow.style.opacity = '1';
+            });
+
+            clearTimeout(glowTimeout);
+            glowTimeout = setTimeout(() => {
+                glow.style.opacity = '0.5';
+            }, 500);
+        });
+
+        document.addEventListener('mouseleave', () => {
+            glow.style.opacity = '0';
+        });
+
+        // --- NAVBAR SCROLL EFFECT ---
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>
