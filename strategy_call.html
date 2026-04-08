@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Strategy Call | Signal HQ</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        obsidian: '#0A0A0A',
+                        intelligence: '#4F46E5',
+                        'intelligence-light': '#818cf8',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { transition: background-color 0.4s ease, color 0.4s ease; }
+        
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+        }
+
+        .dark .bg-grid {
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05);
+        }
+
+        .dark .glass-panel {
+            background: rgba(20, 20, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);
+        }
+
+        .logo-text {
+            background: linear-gradient(110deg, #111827 30%, #6B7280 50%, #111827 70%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .dark .logo-text {
+            background: linear-gradient(110deg, #FFFFFF 30%, rgba(255,255,255,0.5) 50%, #FFFFFF 70%);
+            -webkit-background-clip: text;
+        }
+
+        /* --- SIGNAL LOGO INTEGRATION STYLES --- */
+        .brand-group {
+            display: flex;
+            flex-direction: column;
+            width: max-content;
+            text-decoration: none;
+            /* Smooth scaling transition for the whole logo block */
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: transform;
+            position: relative;
+        }
+
+        .brand-group:hover {
+            transform: scale(1.04);
+        }
+
+        .word-mark {
+            font-family: 'Inter', sans-serif;
+            font-size: 2.75rem;
+            font-weight: 600;
+            line-height: 1.1; 
+            color: #111827; 
+            
+            /* Enhanced gradient with a 300% background size for the shimmer effect */
+            background: linear-gradient(110deg, #111827 30%, #6B7280 50%, #111827 70%);
+            background-size: 300% auto;
+            
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.5s ease;
+            padding-bottom: 12px; 
+            margin-bottom: -12px; 
+        }
+
+        /* Activate the shine animation and add a subtle backlit glow on hover */
+        .brand-group:hover .word-mark {
+            animation: shine 3s linear infinite;
+            filter: drop-shadow(0 4px 12px rgba(17, 24, 39, 0.15));
+        }
+
+        .dark .brand-group:hover .word-mark {
+            filter: drop-shadow(0 4px 16px rgba(255, 255, 255, 0.2));
+        }
+
+        .dark .word-mark {
+            color: #ffffff;
+            background: linear-gradient(110deg, #FFFFFF 30%, rgba(255, 255, 255, 0.5) 50%, #FFFFFF 70%);
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+        }
+
+        @keyframes shine {
+            0% { background-position: 200% center; }
+            100% { background-position: -100% center; }
+        }
+
+        /* --- Pulsing Signal Dot & Wave Emissions --- */
+        .signal-dot {
+            display: inline-block;
+            position: relative;
+            width: 10px;
+            height: 10px;
+            background-color: #4F46E5; /* The 'intelligence' purple from your theme */
+            border-radius: 50%;
+            margin-left: 8px;
+            transform: translateY(-8px); /* Optically aligns with the top of the text */
+            box-shadow: 0 0 12px rgba(79, 70, 229, 0.8);
+            animation: pulse-dot 3s ease-in-out infinite;
+        }
+
+        .dark .signal-dot {
+            background-color: #818cf8; /* The 'intelligence-light' from your theme */
+            box-shadow: 0 0 16px rgba(129, 140, 248, 0.8);
+        }
+
+        /* The invisible rings that will expand */
+        .signal-dot::before,
+        .signal-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border: 1px solid #4F46E5;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .dark .signal-dot::before,
+        .dark .signal-dot::after {
+            border-color: #818cf8;
+        }
+
+        /* Trigger the wave animations on hover */
+        .brand-group:hover .signal-dot::before {
+            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        }
+
+        .brand-group:hover .signal-dot::after {
+            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: translateY(-8px) scale(1); }
+            50% { opacity: 0.7; transform: translateY(-8px) scale(0.85); }
+        }
+
+        @keyframes emit-double-wave {
+            0% { width: 10px; height: 10px; opacity: 0.8; }
+            15% { width: 45px; height: 45px; opacity: 0; }
+            100% { width: 45px; height: 45px; opacity: 0; }
+        }
+
+        .ambient-glow {
+            position: absolute;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            pointer-events: none;
+        }
+        .dark .ambient-glow { background: radial-gradient(circle, rgba(79, 70, 229, 0.25) 0%, rgba(10,10,10,0) 70%); }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-obsidian text-gray-900 dark:text-white min-h-screen relative overflow-x-hidden antialiased selection:bg-intelligence selection:text-white">
+
+    <div class="absolute inset-0 bg-grid z-0"></div>
+    <div class="ambient-glow w-[600px] h-[600px] top-[-200px] left-[-200px]"></div>
+    <div class="ambient-glow w-[800px] h-[800px] bottom-[-300px] right-[-200px] opacity-50"></div>
+
+    <!-- Nav -->
+    <nav class="relative z-10 w-full max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
+        <!-- Scaled Wordmark Lockup -->
+        <div style="width: 115px; height: 56px; position: relative; z-index: 10;">
+            <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.9); transform-origin: top left; position: absolute; top: 0; left: 0;">
+                <a href="index.html" class="brand-group" aria-label="Signal HQ Home">
+                    <div class="word-mark">
+                        <span style="font-weight: 700; letter-spacing: -0.05em;">Signal</span><span style="font-weight: 300; margin-left: 6px; letter-spacing: 0;">HQ</span><span class="signal-dot"></span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <button onclick="document.documentElement.classList.toggle('dark')" class="p-2 rounded-full border border-gray-200 dark:border-white/10 text-gray-500 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+            <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+            <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="relative z-10 max-w-7xl mx-auto px-6 pt-12 pb-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        
+        <!-- Left: Copy & Value Prop -->
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-intelligence/20 bg-intelligence/5 text-xs font-medium text-intelligence dark:text-intelligence-light mb-6">
+                <i data-lucide="zap" class="w-3 h-3"></i> System Execution Services
+            </div>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tighter mb-6 leading-[1.1]">
+                Let's build your <br><span class="logo-text">system architecture.</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mb-10 font-light max-w-md leading-relaxed">
+                Whether you need a custom web application, workflow automation, or a complete digital transformation, our experts execute the blueprints you design in Signal HQ.
+            </p>
+
+            <div class="space-y-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center shrink-0">
+                        <i data-lucide="compass" class="w-5 h-5 text-gray-700 dark:text-gray-300"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-gray-900 dark:text-white text-lg">Discovery & Mapping</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">We align your goals with our system design frameworks.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center shrink-0">
+                        <i data-lucide="code" class="w-5 h-5 text-gray-700 dark:text-gray-300"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-gray-900 dark:text-white text-lg">Rapid Execution</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">From high-level logic flows to actual deployed code and automations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Glassmorphic Booking Widget Placeholder -->
+        <div class="relative">
+            <!-- Decorative blur behind card -->
+            <div class="absolute inset-0 bg-intelligence/20 blur-[80px] rounded-full z-0 transform translate-y-10 scale-90"></div>
+            
+            <div class="glass-panel rounded-3xl p-2 relative z-10">
+                <div class="bg-white dark:bg-[#0A0A0A] rounded-[1.25rem] border border-gray-100 dark:border-gray-800 h-[600px] flex flex-col overflow-hidden shadow-inner">
+                    
+                    <!-- Mock Widget Header -->
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-white/[0.02]">
+                        <div class="flex items-center gap-4">
+                            <img src="https://i.pravatar.cc/150?img=68" alt="Consultant" class="w-12 h-12 rounded-full border-2 border-white dark:border-gray-800 shadow-sm">
+                            <div>
+                                <h4 class="font-medium text-sm text-gray-900 dark:text-white">Alex Mercer</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Head of Systems Architecture</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-medium text-gray-400 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> 30 Min</span>
+                    </div>
+
+                    <!-- Mock Widget Body -->
+                    <div class="flex-grow flex items-center justify-center flex-col text-center p-8">
+                        <div class="w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center border border-gray-100 dark:border-gray-800 mb-4 animate-pulse">
+                            <i data-lucide="calendar" class="w-6 h-6 text-gray-400"></i>
+                        </div>
+                        <h5 class="font-medium text-lg text-gray-900 dark:text-white mb-2">Scheduling Embed Goes Here</h5>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+                            Drop your Calendly, SavvyCal, or custom scheduling iframe right into this glass container.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>
