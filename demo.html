@@ -198,45 +198,115 @@
             display: flex;
             flex-direction: column;
             width: max-content;
+            text-decoration: none;
+            /* Smooth scaling transition for the whole logo block */
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: transform;
+            position: relative;
+        }
+
+        .brand-group:hover {
+            transform: scale(1.04);
         }
 
         .word-mark {
             font-family: 'Inter', sans-serif;
             font-size: 2.75rem;
             font-weight: 600;
-            letter-spacing: -0.03em;
             line-height: 1.1; 
             color: #111827; 
-            background: linear-gradient(180deg, #111827 0%, #4B5563 100%);
+            
+            /* Enhanced gradient with a 300% background size for the shimmer effect */
+            background: linear-gradient(110deg, #111827 30%, #6B7280 50%, #111827 70%);
+            background-size: 300% auto;
+            
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            padding-bottom: 16px; 
-            margin-bottom: -16px; 
-            transition: all 0.4s ease;
+            transition: all 0.5s ease;
+            padding-bottom: 12px; 
+            margin-bottom: -12px; 
+        }
+
+        /* Activate the shine animation and add a subtle backlit glow on hover */
+        .brand-group:hover .word-mark {
+            animation: shine 3s linear infinite;
+            filter: drop-shadow(0 4px 12px rgba(17, 24, 39, 0.15));
+        }
+
+        .dark .brand-group:hover .word-mark {
+            filter: drop-shadow(0 4px 16px rgba(255, 255, 255, 0.2));
         }
 
         .dark .word-mark {
             color: #ffffff;
-            background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.7) 100%);
+            background: linear-gradient(110deg, #FFFFFF 30%, rgba(255, 255, 255, 0.5) 50%, #FFFFFF 70%);
+            background-size: 300% auto;
             -webkit-background-clip: text;
         }
 
-        .sub-mark {
-            font-family: 'Inter', sans-serif;
-            font-size: 0.55rem;
-            font-weight: 500;
-            color: rgba(17, 24, 39, 0.45); 
-            text-transform: uppercase;
-            width: 100%;
-            display: flex;
-            justify-content: space-between; 
-            margin-top: 6px; 
-            user-select: none;
-            transition: color 0.4s ease;
+        @keyframes shine {
+            0% { background-position: 200% center; }
+            100% { background-position: -100% center; }
         }
 
-        .dark .sub-mark {
-            color: rgba(255, 255, 255, 0.4);
+        /* --- Pulsing Signal Dot & Wave Emissions --- */
+        .signal-dot {
+            display: inline-block;
+            position: relative;
+            width: 10px;
+            height: 10px;
+            background-color: #4F46E5; /* The 'intelligence' purple from your theme */
+            border-radius: 50%;
+            margin-left: 8px;
+            transform: translateY(-8px); /* Optically aligns with the top of the text */
+            box-shadow: 0 0 12px rgba(79, 70, 229, 0.8);
+            animation: pulse-dot 3s ease-in-out infinite;
+        }
+
+        .dark .signal-dot {
+            background-color: #818cf8; /* The 'intelligence-light' from your theme */
+            box-shadow: 0 0 16px rgba(129, 140, 248, 0.8);
+        }
+
+        /* The invisible rings that will expand */
+        .signal-dot::before,
+        .signal-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border: 1px solid #4F46E5;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .dark .signal-dot::before,
+        .dark .signal-dot::after {
+            border-color: #818cf8;
+        }
+
+        /* Trigger the wave animations on hover */
+        .brand-group:hover .signal-dot::before {
+            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        }
+
+        .brand-group:hover .signal-dot::after {
+            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: translateY(-8px) scale(1); }
+            50% { opacity: 0.7; transform: translateY(-8px) scale(0.85); }
+        }
+
+        @keyframes emit-double-wave {
+            0% { width: 10px; height: 10px; opacity: 0.8; }
+            15% { width: 45px; height: 45px; opacity: 0; }
+            100% { width: 45px; height: 45px; opacity: 0; }
         }
 
         /* --- APPLE-STYLE SHIMMER EFFECT --- */
@@ -296,14 +366,15 @@
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             
             <!-- Scaled Wordmark Lockup -->
-            <a href="index.html" class="block w-[115px] h-[56px] relative z-10 focus:outline-none">
+            <div style="width: 115px; height: 56px; position: relative; z-index: 10;">
                 <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.9); transform-origin: top left; position: absolute; top: 0; left: 0;">
-                    <div class="brand-group">
-                        <div class="word-mark">Signal</div>
-                        <div class="sub-mark tracking-target">System Intelligence</div>
-                    </div>
+                    <a href="index.html" class="brand-group" aria-label="Signal HQ Home">
+                        <div class="word-mark">
+                            <span style="font-weight: 700; letter-spacing: -0.05em;">Signal</span><span style="font-weight: 300; margin-left: 6px; letter-spacing: 0;">HQ</span><span class="signal-dot"></span>
+                        </div>
+                    </a>
                 </div>
-            </a>
+            </div>
 
             <div class="hidden md:flex items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
                 <a href="index.html#suite" class="hover:text-gray-900 dark:hover:text-white transition-colors">Suite</a>
@@ -602,14 +673,15 @@
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
             
             <!-- Scaled Wordmark Lockup -->
-            <a href="index.html" class="block w-[100px] h-[44px] relative focus:outline-none">
+            <div style="width: 100px; height: 44px; position: relative;">
                 <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.75); transform-origin: top left; position: absolute; top: 0; left: 0;">
-                    <div class="brand-group">
-                        <div class="word-mark">Signal</div>
-                        <div class="sub-mark tracking-target">System Intelligence</div>
-                    </div>
+                    <a href="index.html" class="brand-group" aria-label="Signal HQ Home">
+                        <div class="word-mark">
+                            <span style="font-weight: 700; letter-spacing: -0.05em;">Signal</span><span style="font-weight: 300; margin-left: 6px; letter-spacing: 0;">HQ</span><span class="signal-dot"></span>
+                        </div>
+                    </a>
                 </div>
-            </a>
+            </div>
             
             <div class="flex items-center gap-8 text-sm text-gray-500 dark:text-white/40">
                 <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Documentation</a>
@@ -662,19 +734,6 @@
 
         document.querySelectorAll('.reveal').forEach((el) => {
             revealObserver.observe(el);
-        });
-
-        // --- PERFECT WIDTH TEXT TRACKING ---
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.tracking-target').forEach(subMark => {
-                const text = subMark.textContent.toUpperCase();
-                subMark.innerHTML = ''; 
-                text.split('').forEach(char => {
-                    const span = document.createElement('span');
-                    span.innerHTML = char === ' ' ? '&nbsp;' : char; 
-                    subMark.appendChild(span);
-                });
-            });
         });
 
         // --- INTERACTIVE 3D TILT ON PRODUCT CARDS ---
