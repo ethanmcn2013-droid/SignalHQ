@@ -108,6 +108,7 @@
             transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease-out;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
             will-change: transform;
+            display: block; /* Ensure a tags behave properly as cards */
         }
 
         .dark .glass-card {
@@ -388,7 +389,7 @@
 
             <div class="hidden md:flex items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
                 <a href="#suite" class="hover:text-gray-900 dark:hover:text-white transition-colors">Suite</a>
-                <a href="#services" class="hover:text-gray-900 dark:hover:text-white transition-colors">Services</a>
+                <a href="services.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Services</a>
             </div>
             
             <div class="flex items-center gap-4">
@@ -398,7 +399,7 @@
                     <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
                 </button>
 
-                <a href="#cta" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all px-4 py-2 rounded-full border border-gray-200 dark:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 hidden sm:block">Work with us</a>
+                <a href="strategy_call.html" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all px-4 py-2 rounded-full border border-gray-200 dark:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 hidden sm:block">Work with us</a>
             </div>
         </div>
     </nav>
@@ -446,10 +447,10 @@
             </p>
             
             <div class="reveal delay-200 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="#suite" class="w-full sm:w-auto px-8 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-black font-medium rounded-full hover:bg-gray-800 dark:hover:bg-white/90 transition-all text-sm shadow-md dark:shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+                <a href="auth.html" class="w-full sm:w-auto px-8 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-black font-medium rounded-full hover:bg-gray-800 dark:hover:bg-white/90 transition-all text-sm shadow-md dark:shadow-[0_0_20px_rgba(255,255,255,0.15)]">
                     Start Designing Systems
                 </a>
-                <a href="#services" class="w-full sm:w-auto px-8 py-3.5 bg-transparent border border-gray-300 dark:border-white/20 text-gray-900 dark:text-white font-medium rounded-full hover:bg-gray-50 dark:hover:bg-white/5 transition-all text-sm">
+                <a href="services.html" class="w-full sm:w-auto px-8 py-3.5 bg-transparent border border-gray-300 dark:border-white/20 text-gray-900 dark:text-white font-medium rounded-full hover:bg-gray-50 dark:hover:bg-white/5 transition-all text-sm">
                     Explore Services
                 </a>
             </div>
@@ -473,7 +474,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 <!-- Plan -->
-                <div class="reveal delay-100 glass-card p-6 rounded-2xl group cursor-pointer relative overflow-hidden">
+                <a href="plan.html" class="reveal delay-100 glass-card p-6 rounded-2xl group cursor-pointer relative overflow-hidden block">
                     <div class="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                         <i data-lucide="arrow-up-right" class="w-4 h-4 text-gray-400 dark:text-white/30"></i>
                     </div>
@@ -483,10 +484,10 @@
                     <h3 class="text-lg font-medium mb-2 text-gray-900 dark:text-white">Signal Plan</h3>
                     <p class="text-gray-600 dark:text-white/60 text-sm mb-6 h-12">Model timelines, dependencies, and uncertainty — and see how changes impact outcomes before they happen.</p>
                     <span class="text-xs font-medium text-gray-400 dark:text-white/40 uppercase tracking-wider">Scenario Simulation</span>
-                </div>
+                </a>
 
                 <!-- Map -->
-                <div class="reveal delay-200 glass-card p-6 rounded-2xl group cursor-pointer relative overflow-hidden">
+                <a href="map.html" class="reveal delay-200 glass-card p-6 rounded-2xl group cursor-pointer relative overflow-hidden block">
                     <div class="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                         <i data-lucide="arrow-up-right" class="w-4 h-4 text-gray-400 dark:text-white/30"></i>
                     </div>
@@ -496,10 +497,10 @@
                     <h3 class="text-lg font-medium mb-2 text-gray-900 dark:text-white">Signal Map</h3>
                     <p class="text-gray-600 dark:text-white/60 text-sm mb-6 h-12">Design complex operational systems with precision — from high-level flows to detailed execution layers.</p>
                     <span class="text-xs font-medium text-gray-400 dark:text-white/40 uppercase tracking-wider">System Architecture</span>
-                </div>
+                </a>
 
                 <!-- Board -->
-                <div class="reveal delay-300 glass-card p-6 rounded-2xl group cursor-pointer relative overflow-hidden">
+                <a href="board.html" class="reveal delay-300 glass-card p-6 rounded-2xl group cursor-pointer relative overflow-hidden block">
                     <div class="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                         <i data-lucide="arrow-up-right" class="w-4 h-4 text-gray-400 dark:text-white/30"></i>
                     </div>
@@ -509,10 +510,10 @@
                     <h3 class="text-lg font-medium mb-2 text-gray-900 dark:text-white">Signal Board</h3>
                     <p class="text-gray-600 dark:text-white/60 text-sm mb-6 h-12">Think, design, and align in a shared infinite workspace.</p>
                     <span class="text-xs font-medium text-gray-400 dark:text-white/40 uppercase tracking-wider">Real-Time Collaboration</span>
-                </div>
+                </a>
 
                 <!-- Automate -->
-                <div class="reveal delay-400 glass-card p-6 rounded-2xl group cursor-pointer relative overflow-hidden">
+                <a href="automate.html" class="reveal delay-400 glass-card p-6 rounded-2xl group cursor-pointer relative overflow-hidden block">
                     <div class="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                         <i data-lucide="arrow-up-right" class="w-4 h-4 text-gray-400 dark:text-white/30"></i>
                     </div>
@@ -522,7 +523,7 @@
                     <h3 class="text-lg font-medium mb-2 text-gray-900 dark:text-white">Signal Automate</h3>
                     <p class="text-gray-600 dark:text-white/60 text-sm mb-6 h-12">Turn designed systems into executable workflows — without code.</p>
                     <span class="text-xs font-medium text-gray-400 dark:text-white/40 uppercase tracking-wider">Execution Engine</span>
-                </div>
+                </a>
             </div>
         </div>
     </section>
@@ -575,7 +576,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Demo 1 -->
-                <div class="reveal delay-100 glass-card p-8 rounded-2xl group cursor-pointer flex flex-col h-full">
+                <a href="demo.html" class="reveal delay-100 glass-card p-8 rounded-2xl group cursor-pointer flex flex-col h-full block">
                     <div class="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6">
                         <i data-lucide="box" class="w-5 h-5 text-gray-700 dark:text-white/80 group-hover:text-intelligence transition-colors"></i>
                     </div>
@@ -584,10 +585,10 @@
                     <div class="flex items-center gap-2 text-sm font-medium text-intelligence dark:text-intelligence-light group-hover:gap-3 transition-all">
                         Explore Example <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </div>
-                </div>
+                </a>
 
                 <!-- Demo 2 -->
-                <div class="reveal delay-200 glass-card p-8 rounded-2xl group cursor-pointer flex flex-col h-full">
+                <a href="demo.html" class="reveal delay-200 glass-card p-8 rounded-2xl group cursor-pointer flex flex-col h-full block">
                     <div class="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6">
                         <i data-lucide="rocket" class="w-5 h-5 text-gray-700 dark:text-white/80 group-hover:text-intelligence transition-colors"></i>
                     </div>
@@ -596,10 +597,10 @@
                     <div class="flex items-center gap-2 text-sm font-medium text-intelligence dark:text-intelligence-light group-hover:gap-3 transition-all">
                         Explore Example <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </div>
-                </div>
+                </a>
 
                 <!-- Demo 3 -->
-                <div class="reveal delay-300 glass-card p-8 rounded-2xl group cursor-pointer flex flex-col h-full">
+                <a href="demo.html" class="reveal delay-300 glass-card p-8 rounded-2xl group cursor-pointer flex flex-col h-full block">
                     <div class="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6">
                         <i data-lucide="bar-chart" class="w-5 h-5 text-gray-700 dark:text-white/80 group-hover:text-intelligence transition-colors"></i>
                     </div>
@@ -608,7 +609,7 @@
                     <div class="flex items-center gap-2 text-sm font-medium text-intelligence dark:text-intelligence-light group-hover:gap-3 transition-all">
                         Explore Example <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
     </section>
@@ -769,7 +770,7 @@
             <p class="reveal delay-100 text-xl text-gray-600 dark:text-white/60 mb-12 font-light">Deploy the free suite today, or hire our experts to execute.</p>
             
             <div class="reveal delay-200">
-                <a href="#" class="inline-flex items-center justify-center px-10 py-4 bg-gray-900 dark:bg-white text-white dark:text-black font-medium rounded-full hover:bg-gray-800 dark:hover:bg-white/90 transition-all text-lg shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_0_60px_rgba(255,255,255,0.3)]">
+                <a href="auth.html" class="inline-flex items-center justify-center px-10 py-4 bg-gray-900 dark:bg-white text-white dark:text-black font-medium rounded-full hover:bg-gray-800 dark:hover:bg-white/90 transition-all text-lg shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_0_60px_rgba(255,255,255,0.3)]">
                     Start Designing for Free
                 </a>
             </div>
@@ -794,8 +795,8 @@
             <div class="flex items-center gap-8 text-sm text-gray-500 dark:text-white/40">
                 <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Documentation</a>
                 <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Ethics</a>
-                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Consulting</a>
-                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Contact</a>
+                <a href="services.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Consulting</a>
+                <a href="strategy_call.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
             
             <div class="text-xs text-gray-400 dark:text-white/30">
