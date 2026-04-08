@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signal Board | Infinite Multiplayer Canvas</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', 
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#0A0A0A',
+                        intelligence: '#4F46E5',
+                        'intelligence-light': '#818cf8',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out 3s infinite',
+                        'ring-pulse': 'ring-pulse 2.5s ease-in-out infinite',
+                        'spin-slow': 'spin-slow 4s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        'ring-pulse': {
+                            '0%': { transform: 'scale(1)', opacity: '1' },
+                            '50%': { transform: 'scale(1.15)', opacity: '0.7' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        'spin-slow': {
+                            'from': { transform: 'rotate(0deg)' },
+                            'to': { transform: 'rotate(360deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* --- Scroll Reveal Utilities --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: opacity, transform;
+        }
+        .reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+        .delay-400 { transition-delay: 400ms; }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid transparent;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        #navbar.scrolled {
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark #navbar.scrolled {
+            background: rgba(10, 10, 10, 0.85);
+            border-bottom-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .dark .glass {
+            background: rgba(10, 10, 10, 0.5);
+        }
+        
+        .glass-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(249, 250, 251, 1) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            will-change: transform;
+        }
+
+        .dark .glass-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: none;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(79, 70, 229, 0.3);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(243, 244, 246, 1) 100%);
+            box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.15);
+        }
+
+        .dark .glass-card:hover {
+            border-color: rgba(79, 70, 229, 0.4);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.15);
+        }
+
+        /* Dynamic Grid Background */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+        }
+
+        .dark .bg-grid {
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+
+        /* Ambient Cursor Glow */
+        #glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            transition: opacity 0.5s ease;
+        }
+
+        .dark #glow {
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, rgba(10, 10, 10, 0) 70%);
+        }
+
+        /* Clean Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9FAFB;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D1D5DB;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9CA3AF;
+        }
+        .dark ::-webkit-scrollbar-track { background: #0A0A0A; }
+        .dark ::-webkit-scrollbar-thumb { background: #333; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* --- SIGNAL LOGO INTEGRATION STYLES --- */
+        .brand-group {
+            display: flex;
+            flex-direction: column;
+            width: max-content;
+            text-decoration: none;
+            /* Smooth scaling transition for the whole logo block */
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: transform;
+            position: relative;
+        }
+
+        .brand-group:hover {
+            transform: scale(1.04);
+        }
+
+        .word-mark {
+            font-family: 'Inter', sans-serif;
+            font-size: 2.75rem;
+            font-weight: 600;
+            line-height: 1.1; 
+            color: #111827; 
+            
+            /* Enhanced gradient with a 300% background size for the shimmer effect */
+            background: linear-gradient(110deg, #111827 30%, #6B7280 50%, #111827 70%);
+            background-size: 300% auto;
+            
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.5s ease;
+            padding-bottom: 12px; 
+            margin-bottom: -12px; 
+        }
+
+        /* Activate the shine animation and add a subtle backlit glow on hover */
+        .brand-group:hover .word-mark {
+            animation: shine 3s linear infinite;
+            filter: drop-shadow(0 4px 12px rgba(17, 24, 39, 0.15));
+        }
+
+        .dark .brand-group:hover .word-mark {
+            filter: drop-shadow(0 4px 16px rgba(255, 255, 255, 0.2));
+        }
+
+        .dark .word-mark {
+            color: #ffffff;
+            background: linear-gradient(110deg, #FFFFFF 30%, rgba(255, 255, 255, 0.5) 50%, #FFFFFF 70%);
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+        }
+
+        @keyframes shine {
+            0% { background-position: 200% center; }
+            100% { background-position: -100% center; }
+        }
+
+        /* --- Pulsing Signal Dot & Wave Emissions --- */
+        .signal-dot {
+            display: inline-block;
+            position: relative;
+            width: 10px;
+            height: 10px;
+            background-color: #4F46E5; /* The 'intelligence' purple from your theme */
+            border-radius: 50%;
+            margin-left: 8px;
+            transform: translateY(-8px); /* Optically aligns with the top of the text */
+            box-shadow: 0 0 12px rgba(79, 70, 229, 0.8);
+            animation: pulse-dot 3s ease-in-out infinite;
+        }
+
+        .dark .signal-dot {
+            background-color: #818cf8; /* The 'intelligence-light' from your theme */
+            box-shadow: 0 0 16px rgba(129, 140, 248, 0.8);
+        }
+
+        /* The invisible rings that will expand */
+        .signal-dot::before,
+        .signal-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border: 1px solid #4F46E5;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .dark .signal-dot::before,
+        .dark .signal-dot::after {
+            border-color: #818cf8;
+        }
+
+        /* Trigger the wave animations on hover */
+        .brand-group:hover .signal-dot::before {
+            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        }
+
+        .brand-group:hover .signal-dot::after {
+            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: translateY(-8px) scale(1); }
+            50% { opacity: 0.7; transform: translateY(-8px) scale(0.85); }
+        }
+
+        @keyframes emit-double-wave {
+            0% { width: 10px; height: 10px; opacity: 0.8; }
+            15% { width: 45px; height: 45px; opacity: 0; }
+            100% { width: 45px; height: 45px; opacity: 0; }
+        }
+
+        /* --- APPLE-STYLE SHIMMER EFFECT --- */
+        .shimmer-text {
+            color: #9CA3AF; 
+            background: linear-gradient(110deg, #9CA3AF 40%, #FFFFFF 50%, #9CA3AF 60%);
+            background-size: 300% auto; 
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer-text 15s linear infinite; 
+        }
+
+        .dark .shimmer-text {
+            background: linear-gradient(110deg, rgba(255,255,255,0.4) 40%, #FFFFFF 50%, rgba(255,255,255,0.4) 60%);
+            -webkit-background-clip: text;
+        }
+
+        .shimmer-text-hero {
+            color: #111827; 
+            background: linear-gradient(110deg, #111827 40%, #E5E7EB 50%, #111827 60%);
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer-text 15s linear infinite;
+        }
+
+        .dark .shimmer-text-hero {
+            color: #ffffff;
+            background: linear-gradient(110deg, rgba(255,255,255,0.8) 40%, #FFFFFF 50%, rgba(255,255,255,0.8) 60%);
+            -webkit-background-clip: text;
+        }
+
+        @keyframes shimmer-text {
+            0% { background-position: 100% center; }
+            22% { background-position: 0% center; }
+            100% { background-position: 0% center; }
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-intelligence selection:text-white relative bg-white text-gray-900 dark:bg-obsidian dark:text-white">
+
+    <!-- Ambient Glow Element -->
+    <div id="glow"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            
+            <!-- Scaled Wordmark Lockup -->
+            <div style="width: 115px; height: 56px; position: relative; z-index: 10;">
+                <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.9); transform-origin: top left; position: absolute; top: 0; left: 0;">
+                    <a href="index.html" class="brand-group" aria-label="Signal HQ Home">
+                        <div class="word-mark">
+                            <span style="font-weight: 700; letter-spacing: -0.05em;">Signal</span><span style="font-weight: 300; margin-left: 6px; letter-spacing: 0;">HQ</span><span class="signal-dot"></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
+                <a href="index.html#suite" class="hover:text-gray-900 dark:hover:text-white transition-colors">Suite</a>
+                <a href="index.html#how-it-works" class="hover:text-gray-900 dark:hover:text-white transition-colors">How it Works</a>
+                <a href="index.html#services" class="hover:text-gray-900 dark:hover:text-white transition-colors">Services</a>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <!-- Fluid Dark Mode Toggle -->
+                <button id="theme-toggle" class="p-2 rounded-full border border-gray-200 dark:border-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-all focus:outline-none">
+                    <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+                    <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
+                </button>
+
+                <a href="#cta" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all px-4 py-2 rounded-full border border-gray-200 dark:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 hidden sm:block">Work with us</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. PRODUCT HERO SECTION -->
+    <section class="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 overflow-hidden">
+        <!-- Background Grid -->
+        <div class="absolute inset-0 bg-grid z-[-2]"></div>
+        
+        <div class="max-w-5xl mx-auto px-6 text-center z-10 w-full">
+            <div class="reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-intelligence/30 bg-intelligence/10 text-xs font-medium text-intelligence dark:text-intelligence-light mb-8 shadow-sm">
+                <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+                Signal Board
+            </div>
+            
+            <h1 class="reveal delay-100 text-5xl md:text-7xl lg:text-8xl font-medium tracking-tighter mb-6 text-gray-900 dark:text-white">
+                The infinite canvas <br><span class="shimmer-text-hero">for absolute clarity.</span>
+            </h1>
+            
+            <p class="reveal delay-200 text-lg md:text-xl text-gray-600 dark:text-white/60 max-w-2xl mx-auto mb-16 leading-relaxed font-light">
+                Unify brainstorming, wireframing, and architecture planning in a frictionless, real-time multiplayer environment.
+            </p>
+            
+            <!-- Abstract Canvas Representation -->
+            <div class="reveal delay-300 relative w-full h-64 md:h-96 rounded-3xl glass-card overflow-hidden border border-gray-200 dark:border-white/10 bg-white/50 dark:bg-obsidian/50 shadow-2xl">
+                <!-- Inner Infinite Grid -->
+                <div class="absolute inset-0 bg-grid opacity-30 dark:opacity-20 scale-150 transform origin-center"></div>
+                
+                <!-- Abstract UI Elements -->
+                <!-- Sticky Note 1 -->
+                <div class="absolute top-[20%] left-[25%] w-32 h-32 bg-amber-100 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-500/30 rounded-lg shadow-sm rotate-3 transform transition-transform hover:scale-105 duration-300">
+                    <div class="w-20 h-2 bg-amber-200 dark:bg-amber-500/40 rounded-full mt-4 mx-4"></div>
+                    <div class="w-16 h-2 bg-amber-200 dark:bg-amber-500/40 rounded-full mt-3 mx-4"></div>
+                </div>
+
+                <!-- Sticky Note 2 -->
+                <div class="absolute top-[45%] left-[40%] w-40 h-24 bg-blue-100 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/30 rounded-lg shadow-sm -rotate-2 transform transition-transform hover:scale-105 duration-300">
+                    <div class="w-24 h-2 bg-blue-200 dark:bg-blue-500/40 rounded-full mt-4 mx-4"></div>
+                    <div class="w-20 h-2 bg-blue-200 dark:bg-blue-500/40 rounded-full mt-3 mx-4"></div>
+                </div>
+
+                <!-- Image/Media Block -->
+                <div class="absolute top-[15%] right-[25%] w-48 h-36 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl shadow-sm rotate-1 flex items-center justify-center overflow-hidden">
+                    <i data-lucide="image" class="w-8 h-8 text-gray-300 dark:text-white/20"></i>
+                </div>
+
+                <!-- Connective Line -->
+                <svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 1;">
+                    <path d="M 350 150 C 450 150, 400 250, 500 220" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 4" class="text-intelligence opacity-50"></path>
+                </svg>
+
+                <!-- Live Multiplayer Cursors -->
+                <div class="absolute top-[25%] left-[30%] animate-float z-10 text-intelligence">
+                    <i data-lucide="mouse-pointer-2" class="w-5 h-5 fill-current transform -rotate-12"></i>
+                    <span class="ml-4 -mt-2 px-2 py-1 bg-intelligence text-white text-[10px] font-medium rounded-full shadow-md whitespace-nowrap block w-max">Sarah J.</span>
+                </div>
+
+                <div class="absolute top-[55%] right-[35%] animate-float-delayed z-10 text-emerald-500">
+                    <i data-lucide="mouse-pointer-2" class="w-5 h-5 fill-current transform -rotate-12"></i>
+                    <span class="ml-4 -mt-2 px-2 py-1 bg-emerald-500 text-white text-[10px] font-medium rounded-full shadow-md whitespace-nowrap block w-max">Michael T.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. CORE WORKFLOW SECTION -->
+    <section class="py-32 relative bg-gray-50/50 dark:bg-white/[0.02] border-y border-gray-200 dark:border-white/5">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="reveal mb-20 md:flex justify-between items-end text-center md:text-left">
+                <div class="max-w-2xl">
+                    <h2 class="text-3xl md:text-4xl font-medium tracking-tight mb-4 text-gray-900 dark:text-white">How Signal Board Works</h2>
+                    <p class="text-gray-500 dark:text-white/50 text-lg">A highly-engineered process designed to turn collaborative chaos into structured, executable reality.</p>
+                </div>
+            </div>
+
+            <!-- 2x2 Feature Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Step 1 -->
+                <div class="reveal delay-100 glass-card p-10 rounded-3xl group relative overflow-hidden flex flex-col h-full">
+                    <div class="mb-8 relative z-10">
+                        <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6 text-gray-900 dark:text-white group-hover:bg-intelligence group-hover:text-white group-hover:border-intelligence transition-all duration-300">
+                            <span class="text-xl font-semibold">1</span>
+                        </div>
+                        <h3 class="text-2xl font-medium mb-4 text-gray-900 dark:text-white">Canvas Provisioning</h3>
+                        <p class="text-gray-600 dark:text-white/60 leading-relaxed font-light">Instantiates an infinite, hardware-accelerated workspace. Engineered to handle thousands of simultaneous objects—from text to complex vectors—without dropping a single frame of performance.</p>
+                    </div>
+                    <!-- Decorative Background element -->
+                    <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-gradient-to-tl from-gray-200/50 to-transparent dark:from-white/5 dark:to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 pointer-events-none"></div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="reveal delay-200 glass-card p-10 rounded-3xl group relative overflow-hidden flex flex-col h-full">
+                    <div class="mb-8 relative z-10">
+                        <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6 text-gray-900 dark:text-white group-hover:bg-intelligence group-hover:text-white group-hover:border-intelligence transition-all duration-300">
+                            <span class="text-xl font-semibold">2</span>
+                        </div>
+                        <h3 class="text-2xl font-medium mb-4 text-gray-900 dark:text-white">Multiplayer Sync</h3>
+                        <p class="text-gray-600 dark:text-white/60 leading-relaxed font-light">Utilizes advanced WebSockets to render live cursors, active typing indicators, and object movements from remote team members globally, operating with true zero latency.</p>
+                    </div>
+                    <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-gradient-to-tl from-gray-200/50 to-transparent dark:from-white/5 dark:to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 pointer-events-none"></div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="reveal delay-100 glass-card p-10 rounded-3xl group relative overflow-hidden flex flex-col h-full">
+                    <div class="mb-8 relative z-10">
+                        <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6 text-gray-900 dark:text-white group-hover:bg-intelligence group-hover:text-white group-hover:border-intelligence transition-all duration-300">
+                            <span class="text-xl font-semibold">3</span>
+                        </div>
+                        <h3 class="text-2xl font-medium mb-4 text-gray-900 dark:text-white">Media Ingestion</h3>
+                        <p class="text-gray-600 dark:text-white/60 leading-relaxed font-light">A frictionless drop-zone. Seamlessly process dragged-and-dropped high-resolution images, generate instant sticky notes, embed live videos, and parse raw code snippets natively on the canvas.</p>
+                    </div>
+                    <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-gradient-to-tl from-gray-200/50 to-transparent dark:from-white/5 dark:to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 pointer-events-none"></div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="reveal delay-200 glass-card p-10 rounded-3xl group relative overflow-hidden flex flex-col h-full">
+                    <div class="mb-8 relative z-10">
+                        <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6 text-gray-900 dark:text-white group-hover:bg-intelligence group-hover:text-white group-hover:border-intelligence transition-all duration-300">
+                            <span class="text-xl font-semibold">4</span>
+                        </div>
+                        <h3 class="text-2xl font-medium mb-4 text-gray-900 dark:text-white">Action Item Extraction</h3>
+                        <p class="text-gray-600 dark:text-white/60 leading-relaxed font-light">Closes the loop. Automatically groups clustered sticky notes and ideas, allowing users to instantly convert a brainstorming session into structured, assignable tasks within Signal Plan.</p>
+                    </div>
+                    <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-gradient-to-tl from-gray-200/50 to-transparent dark:from-white/5 dark:to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 pointer-events-none"></div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. FINAL CTA SECTION -->
+    <section id="cta" class="py-40 relative overflow-hidden bg-white dark:bg-transparent">
+        <!-- Deep Space Gradient -->
+        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[800px] h-[500px] bg-intelligence opacity-10 dark:opacity-20 blur-[150px] rounded-[100%] pointer-events-none"></div>
+        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[400px] h-[300px] bg-black dark:bg-white opacity-5 blur-[100px] rounded-[100%] pointer-events-none"></div>
+
+        <div class="max-w-3xl mx-auto px-6 text-center relative z-10">
+            <h2 class="reveal text-5xl md:text-7xl font-medium tracking-tighter mb-6 text-gray-900 dark:text-white">Your vision is mapped.<br><span class="shimmer-text">Ready to build it?</span></h2>
+            <p class="reveal delay-100 text-xl text-gray-600 dark:text-white/60 mb-12 font-light">Deploy Signal Board for free, or hire our experts to execute your vision.</p>
+            
+            <div class="reveal delay-200 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#" class="w-full sm:w-auto inline-flex items-center justify-center px-10 py-4 bg-gray-900 dark:bg-white text-white dark:text-black font-medium rounded-full hover:bg-gray-800 dark:hover:bg-white/90 transition-all text-lg shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_0_60px_rgba(255,255,255,0.3)]">
+                    Launch Board
+                </a>
+                <a href="index.html#services" class="w-full sm:w-auto inline-flex items-center justify-center px-10 py-4 bg-transparent border border-gray-300 dark:border-white/20 text-gray-900 dark:text-white font-medium rounded-full hover:bg-gray-50 dark:hover:bg-white/5 transition-all text-lg">
+                    Hire our Team
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Minimal Footer -->
+    <footer class="py-8 border-t border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-[#050505] relative z-10 transition-colors">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Scaled Wordmark Lockup (Increased Footer Size) -->
+            <div style="width: 100px; height: 44px; position: relative;">
+                <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.75); transform-origin: top left; position: absolute; top: 0; left: 0;">
+                    <a href="index.html" class="brand-group" aria-label="Signal HQ Home">
+                        <div class="word-mark">
+                            <span style="font-weight: 700; letter-spacing: -0.05em;">Signal</span><span style="font-weight: 300; margin-left: 6px; letter-spacing: 0;">HQ</span><span class="signal-dot"></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-8 text-sm text-gray-500 dark:text-white/40">
+                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Documentation</a>
+                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Ethics</a>
+                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Consulting</a>
+                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Contact</a>
+            </div>
+            
+            <div class="text-xs text-gray-400 dark:text-white/30">
+                &copy; 2026 Signal Intelligence. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // --- FLUID DARK MODE TOGGLE ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+        } else {
+            htmlElement.classList.remove('dark');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            if (htmlElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // --- SCROLL-TRIGGERED REVEAL ANIMATIONS ---
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { 
+            threshold: 0.1, 
+            rootMargin: "0px 0px -50px 0px" 
+        });
+
+        document.querySelectorAll('.reveal').forEach((el) => {
+            revealObserver.observe(el);
+        });
+
+        // --- PERFECT WIDTH TEXT TRACKING ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.tracking-target').forEach(subMark => {
+                const text = subMark.textContent.toUpperCase();
+                subMark.innerHTML = ''; 
+                text.split('').forEach(char => {
+                    const span = document.createElement('span');
+                    span.innerHTML = char === ' ' ? '&nbsp;' : char; 
+                    subMark.appendChild(span);
+                });
+            });
+        });
+
+        // --- INTERACTIVE 3D TILT ON PRODUCT CARDS ---
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * -6; 
+                const rotateY = ((x - centerX) / centerX) * 6;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)`;
+            });
+        });
+
+        // --- AMBIENT GLOW MOUSE TRACKING ---
+        const glow = document.getElementById('glow');
+        let isMouseMoving = false;
+        let glowTimeout;
+
+        document.addEventListener('mousemove', (e) => {
+            isMouseMoving = true;
+            
+            requestAnimationFrame(() => {
+                glow.style.left = e.clientX + 'px';
+                glow.style.top = e.clientY + 'px';
+                glow.style.opacity = '1';
+            });
+
+            clearTimeout(glowTimeout);
+            glowTimeout = setTimeout(() => {
+                glow.style.opacity = '0.5';
+            }, 500);
+        });
+
+        document.addEventListener('mouseleave', () => {
+            glow.style.opacity = '0';
+        });
+
+        // --- NAVBAR SCROLL EFFECT ---
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>
