@@ -11,6 +11,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- Clerk SDK (Loaded with correct data attribute) -->
+    <script 
+        async 
+        crossorigin="anonymous" 
+        data-clerk-publishable-key="pk_test_c3VidGxlLWZpbmNoLTIyLmNsZXJrLmFjY291bnRzLmRldiQ" 
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+        type="text/javascript">
+    </script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -34,18 +43,18 @@
                 linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
         }
         
-        /* Ensures the Clerk component centers perfectly in our layout */
         .clerk-wrapper {
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 400px;
         }
     </style>
 </head>
 <body class="bg-white dark:bg-[#0A0A0A] text-gray-900 dark:text-white min-h-screen flex flex-col md:flex-row antialiased selection:bg-intelligence selection:text-white">
 
-    <!-- Left Panel: Brand Visual (Always Dark Mode aesthetic) -->
+    <!-- Left Panel: Brand Visual -->
     <div class="hidden md:flex md:w-1/2 lg:w-[45%] bg-[#0A0A0A] relative flex-col justify-between p-12 overflow-hidden border-r border-gray-800">
         <div class="absolute inset-0 bg-grid-dark z-0"></div>
         <div class="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-intelligence rounded-full filter blur-[150px] opacity-20 pointer-events-none"></div>
@@ -58,7 +67,6 @@
         </div>
 
         <div class="relative z-10 w-full flex justify-center py-20 pointer-events-none">
-            <!-- Animated Node Graphic -->
             <svg width="400" height="400" viewBox="0 0 800 800" class="stroke-white/20 animate-[spin_120s_linear_infinite]" fill="none">
                 <circle cx="400" cy="400" r="300" stroke-width="2" stroke-dasharray="4 12" />
                 <circle cx="400" cy="400" r="200" stroke-width="2" />
@@ -80,7 +88,6 @@
     <!-- Right Panel: Authentication Area -->
     <div class="w-full md:w-1/2 lg:w-[55%] flex flex-col justify-center items-center p-8 lg:p-24 relative bg-white dark:bg-obsidian transition-colors duration-300">
         
-        <!-- Mobile Logo -->
         <div class="md:hidden absolute top-8 left-8">
             <a href="index.html" class="flex items-center no-underline">
                 <span class="font-bold text-xl tracking-tight text-gray-900 dark:text-white">Signal<span class="font-light ml-1">HQ</span></span>
@@ -88,75 +95,91 @@
             </a>
         </div>
 
-        <button onclick="document.documentElement.classList.toggle('dark')" class="absolute top-8 right-8 p-2 rounded-full border border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors">
+        <button id="theme-toggle" class="absolute top-8 right-8 p-2 rounded-full border border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors">
             <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
             <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
         </button>
 
-        <div class="w-full max-w-md flex flex-col items-center">
-            
-            <!-- This is where Clerk will inject the beautiful Auth UI -->
+        <div class="w-full max-w-md">
             <div id="sign-in-container" class="clerk-wrapper">
-                <!-- Fallback loading state while Clerk initializes -->
-                <div class="animate-pulse flex flex-col items-center">
-                    <div class="w-8 h-8 border-4 border-intelligence border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Loading secure environment...</p>
+                <!-- Loader -->
+                <div id="clerk-loader" class="flex flex-col items-center gap-4">
+                    <div class="w-10 h-10 border-4 border-intelligence border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 animate-pulse">Initializing secure connection...</p>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- Clerk Authentication Script -->
     <script>
-        // Your actual publishable key
-        const clerkPublishableKey = "pk_test_c3VidGxlLWZpbmNoLTIyLmNsZXJrLmFjY291bnRzLmRldiQ";
-      
-        const startClerk = async () => {
-          const Clerk = window.Clerk;
-          try {
-            await Clerk.load();
-            
-            const signInContainer = document.getElementById('sign-in-container');
-            
-            // Clear the loading spinner
-            signInContainer.innerHTML = '';
-      
-            if (Clerk.user) {
-              // If they are already logged in, redirect them to the app!
-              window.location.href = 'board.html'; 
-            } else {
-              // If not logged in, mount the Sign In component
-              Clerk.mountSignIn(signInContainer, {
-                routing: 'hash',
-                afterSignInUrl: 'board.html',
-                afterSignUpUrl: 'board.html',
-                appearance: {
-                  variables: {
-                    colorPrimary: '#4F46E5', // Matches your "intelligence" purple
-                    colorText: '#111827',
-                  },
-                  elements: {
-                    card: 'shadow-xl rounded-2xl border border-gray-200/50',
-                  }
+        // Sync theme with Clerk appearance
+        const isDarkMode = () => document.documentElement.classList.contains('dark');
+
+        window.addEventListener('load', async () => {
+            // Wait for Clerk to be defined on the window
+            const checkClerk = setInterval(async () => {
+                if (window.Clerk) {
+                    clearInterval(checkClerk);
+                    await startClerk();
                 }
-              });
+            }, 100);
+
+            // Timeout after 10 seconds
+            setTimeout(() => {
+                clearInterval(checkClerk);
+                if (!window.Clerk) {
+                    document.getElementById('sign-in-container').innerHTML = `
+                        <div class="text-center p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
+                            <p class="text-red-600 dark:text-red-400 font-medium mb-2">Auth Service Unavailable</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Please check your internet connection or ensure the domain is allowed in your Clerk Dashboard.</p>
+                            <button onclick="window.location.reload()" class="mt-4 text-xs font-semibold underline">Retry</button>
+                        </div>
+                    `;
+                }
+            }, 10000);
+        });
+
+        async function startClerk() {
+            const Clerk = window.Clerk;
+            try {
+                await Clerk.load({
+                    appearance: {
+                        baseTheme: isDarkMode() ? undefined : undefined, // Handled dynamically below
+                        variables: { colorPrimary: '#4F46E5' }
+                    }
+                });
+                
+                const container = document.getElementById('sign-in-container');
+                container.innerHTML = ''; // Clear loader
+
+                if (Clerk.user) {
+                    window.location.href = 'board.html';
+                } else {
+                    Clerk.mountSignIn(container, {
+                        routing: 'hash',
+                        afterSignInUrl: 'board.html',
+                        afterSignUpUrl: 'board.html'
+                    });
+                }
+            } catch (err) {
+                console.error('Clerk load error:', err);
             }
-          } catch (err) {
-            console.error('Error starting Clerk: ', err);
-            document.getElementById('sign-in-container').innerHTML = '<p class="text-red-500">Failed to load authentication. Please refresh.</p>';
-          }
-        };
-      
-        // Dynamically load the Clerk script
-        const script = document.createElement('script');
-        script.setAttribute('data-clerk-publishable-key', clerkPublishableKey);
-        script.async = true;
-        script.src = `https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
-        script.crossOrigin = 'anonymous';
-        script.addEventListener('load', startClerk);
-        document.body.appendChild(script);
-        
+        }
+
+        // Handle Theme Toggle
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            // Re-mount Clerk to update theme if necessary
+            if (window.Clerk && window.Clerk.user === null) {
+                const container = document.getElementById('sign-in-container');
+                container.innerHTML = '';
+                window.Clerk.mountSignIn(container, {
+                    routing: 'hash',
+                    afterSignInUrl: 'board.html'
+                });
+            }
+        });
+
         lucide.createIcons();
     </script>
 </body>
