@@ -30,6 +30,9 @@
                         intelligence: '#4F46E5',
                         'intelligence-light': '#818cf8',
                     },
+                    transitionTimingFunction: {
+                        'apple': 'cubic-bezier(0.25, 1, 0.5, 1)', /* Apple's signature smooth ease-out */
+                    },
                     animation: {
                         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'float': 'float 6s ease-in-out infinite',
@@ -387,12 +390,66 @@
                 </div>
             </div>
 
-            <div class="hidden md:flex items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
-                <a href="#suite" class="hover:text-gray-900 dark:hover:text-white transition-colors">Suite</a>
+            <div class="hidden md:flex items-center gap-8 text-sm text-gray-500 dark:text-gray-400 relative z-20">
+                <!-- Apple-style Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-white transition-colors focus:outline-none py-2">
+                        Suite 
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 opacity-50 group-hover:rotate-180 transition-transform duration-300"></i>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div class="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[320px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-apple transform scale-95 translate-y-[-8px] group-hover:scale-100 group-hover:translate-y-0 before:absolute before:-top-4 before:left-0 before:w-full before:h-4">
+                        <div class="p-2.5 rounded-3xl bg-white/85 dark:bg-[#111111]/85 backdrop-blur-2xl border border-gray-200/50 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+                            
+                            <a href="plan.html" class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-gray-100/80 dark:hover:bg-white/5 transition-all duration-200 group/item">
+                                <div class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200/50 dark:border-white/5 flex items-center justify-center shrink-0 group-hover/item:bg-white dark:group-hover/item:bg-[#1A1A1A] group-hover/item:shadow-sm transition-all duration-200">
+                                    <i data-lucide="calendar" class="w-5 h-5 text-gray-600 dark:text-white/70 group-hover/item:text-intelligence"></i>
+                                </div>
+                                <div class="mt-0.5">
+                                    <div class="text-sm font-semibold text-gray-900 dark:text-white mb-0.5 group-hover/item:text-intelligence dark:group-hover/item:text-intelligence-light transition-colors">Signal Plan</div>
+                                    <div class="text-[13px] text-gray-500 dark:text-white/50 leading-snug">Model timelines and run scenario simulations</div>
+                                </div>
+                            </a>
+
+                            <a href="map.html" class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-gray-100/80 dark:hover:bg-white/5 transition-all duration-200 group/item">
+                                <div class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200/50 dark:border-white/5 flex items-center justify-center shrink-0 group-hover/item:bg-white dark:group-hover/item:bg-[#1A1A1A] group-hover/item:shadow-sm transition-all duration-200">
+                                    <i data-lucide="git-merge" class="w-5 h-5 text-gray-600 dark:text-white/70 group-hover/item:text-intelligence"></i>
+                                </div>
+                                <div class="mt-0.5">
+                                    <div class="text-sm font-semibold text-gray-900 dark:text-white mb-0.5 group-hover/item:text-intelligence dark:group-hover/item:text-intelligence-light transition-colors">Signal Map</div>
+                                    <div class="text-[13px] text-gray-500 dark:text-white/50 leading-snug">Design system architecture & operational flows</div>
+                                </div>
+                            </a>
+
+                            <a href="board.html" class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-gray-100/80 dark:hover:bg-white/5 transition-all duration-200 group/item">
+                                <div class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200/50 dark:border-white/5 flex items-center justify-center shrink-0 group-hover/item:bg-white dark:group-hover/item:bg-[#1A1A1A] group-hover/item:shadow-sm transition-all duration-200">
+                                    <i data-lucide="layout-dashboard" class="w-5 h-5 text-gray-600 dark:text-white/70 group-hover/item:text-intelligence"></i>
+                                </div>
+                                <div class="mt-0.5">
+                                    <div class="text-sm font-semibold text-gray-900 dark:text-white mb-0.5 group-hover/item:text-intelligence dark:group-hover/item:text-intelligence-light transition-colors">Signal Board</div>
+                                    <div class="text-[13px] text-gray-500 dark:text-white/50 leading-snug">Collaborate in real-time on an infinite canvas</div>
+                                </div>
+                            </a>
+
+                            <a href="automate.html" class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-gray-100/80 dark:hover:bg-white/5 transition-all duration-200 group/item">
+                                <div class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200/50 dark:border-white/5 flex items-center justify-center shrink-0 group-hover/item:bg-white dark:group-hover/item:bg-[#1A1A1A] group-hover/item:shadow-sm transition-all duration-200">
+                                    <i data-lucide="zap" class="w-5 h-5 text-gray-600 dark:text-white/70 group-hover/item:text-intelligence"></i>
+                                </div>
+                                <div class="mt-0.5">
+                                    <div class="text-sm font-semibold text-gray-900 dark:text-white mb-0.5 group-hover/item:text-intelligence dark:group-hover/item:text-intelligence-light transition-colors">Signal Automate</div>
+                                    <div class="text-[13px] text-gray-500 dark:text-white/50 leading-snug">Deploy no-code logic and execution engines</div>
+                                </div>
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+                
                 <a href="services.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Services</a>
             </div>
             
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 relative z-20">
                 <!-- Fluid Dark Mode Toggle -->
                 <button id="theme-toggle" class="p-2 rounded-full border border-gray-200 dark:border-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-all focus:outline-none">
                     <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
