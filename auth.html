@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Signal HQ</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        obsidian: '#0A0A0A',
+                        intelligence: '#4F46E5',
+                        'intelligence-light': '#818cf8',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .input-field {
+            @apply w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-intelligence/50 focus:border-intelligence transition-all text-sm;
+        }
+        .social-btn {
+            @apply w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-sm font-medium text-gray-700 dark:text-gray-200;
+        }
+        .bg-grid-dark {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+
+        /* --- SIGNAL LOGO INTEGRATION STYLES --- */
+        .brand-group {
+            display: flex;
+            flex-direction: column;
+            width: max-content;
+            text-decoration: none;
+            /* Smooth scaling transition for the whole logo block */
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: transform;
+            position: relative;
+        }
+
+        .brand-group:hover {
+            transform: scale(1.04);
+        }
+
+        .word-mark {
+            font-family: 'Inter', sans-serif;
+            font-size: 2.75rem;
+            font-weight: 600;
+            line-height: 1.1; 
+            color: #111827; 
+            
+            /* Enhanced gradient with a 300% background size for the shimmer effect */
+            background: linear-gradient(110deg, #111827 30%, #6B7280 50%, #111827 70%);
+            background-size: 300% auto;
+            
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.5s ease;
+            padding-bottom: 12px; 
+            margin-bottom: -12px; 
+        }
+
+        /* Activate the shine animation and add a subtle backlit glow on hover */
+        .brand-group:hover .word-mark {
+            animation: shine 3s linear infinite;
+            filter: drop-shadow(0 4px 12px rgba(17, 24, 39, 0.15));
+        }
+
+        .dark .brand-group:hover .word-mark,
+        .always-dark .brand-group:hover .word-mark {
+            filter: drop-shadow(0 4px 16px rgba(255, 255, 255, 0.2));
+        }
+
+        .dark .word-mark,
+        .always-dark .word-mark {
+            color: #ffffff;
+            background: linear-gradient(110deg, #FFFFFF 30%, rgba(255, 255, 255, 0.5) 50%, #FFFFFF 70%);
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+        }
+
+        @keyframes shine {
+            0% { background-position: 200% center; }
+            100% { background-position: -100% center; }
+        }
+
+        /* --- Pulsing Signal Dot & Wave Emissions --- */
+        .signal-dot {
+            display: inline-block;
+            position: relative;
+            width: 10px;
+            height: 10px;
+            background-color: #4F46E5; /* The 'intelligence' purple from your theme */
+            border-radius: 50%;
+            margin-left: 8px;
+            transform: translateY(-8px); /* Optically aligns with the top of the text */
+            box-shadow: 0 0 12px rgba(79, 70, 229, 0.8);
+            animation: pulse-dot 3s ease-in-out infinite;
+        }
+
+        .dark .signal-dot,
+        .always-dark .signal-dot {
+            background-color: #818cf8; /* The 'intelligence-light' from your theme */
+            box-shadow: 0 0 16px rgba(129, 140, 248, 0.8);
+        }
+
+        /* The invisible rings that will expand */
+        .signal-dot::before,
+        .signal-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border: 1px solid #4F46E5;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .dark .signal-dot::before,
+        .dark .signal-dot::after,
+        .always-dark .signal-dot::before,
+        .always-dark .signal-dot::after {
+            border-color: #818cf8;
+        }
+
+        /* Trigger the wave animations on hover */
+        .brand-group:hover .signal-dot::before {
+            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        }
+
+        .brand-group:hover .signal-dot::after {
+            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: translateY(-8px) scale(1); }
+            50% { opacity: 0.7; transform: translateY(-8px) scale(0.85); }
+        }
+
+        @keyframes emit-double-wave {
+            0% { width: 10px; height: 10px; opacity: 0.8; }
+            15% { width: 45px; height: 45px; opacity: 0; }
+            100% { width: 45px; height: 45px; opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-[#0A0A0A] text-gray-900 dark:text-white min-h-screen flex flex-col md:flex-row antialiased selection:bg-intelligence selection:text-white">
+
+    <!-- Left Panel: Brand Visual (Always Dark Mode aesthetic) -->
+    <div class="hidden md:flex md:w-1/2 lg:w-[45%] bg-[#0A0A0A] relative flex-col justify-between p-12 overflow-hidden border-r border-gray-800">
+        <div class="absolute inset-0 bg-grid-dark z-0"></div>
+        <div class="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-intelligence rounded-full filter blur-[150px] opacity-20 pointer-events-none"></div>
+
+        <div class="relative z-10 always-dark">
+            <div style="width: 115px; height: 56px; position: relative;">
+                <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.9); transform-origin: top left; position: absolute; top: 0; left: 0;">
+                    <a href="index.html" class="brand-group" aria-label="Signal HQ Home">
+                        <div class="word-mark">
+                            <span style="font-weight: 700; letter-spacing: -0.05em;">Signal</span><span style="font-weight: 300; margin-left: 6px; letter-spacing: 0;">HQ</span><span class="signal-dot"></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative z-10 w-full flex justify-center py-20 pointer-events-none">
+            <!-- Animated Node Graphic -->
+            <svg width="400" height="400" viewBox="0 0 800 800" class="stroke-white/20 animate-[spin_120s_linear_infinite]" fill="none">
+                <circle cx="400" cy="400" r="300" stroke-width="2" stroke-dasharray="4 12" />
+                <circle cx="400" cy="400" r="200" stroke-width="2" />
+                <circle cx="400" cy="400" r="100" stroke-width="2" stroke-dasharray="2 6" />
+                <circle cx="400" cy="100" r="8" fill="#818cf8" />
+                <circle cx="612" cy="188" r="5" fill="#ffffff" />
+                <circle cx="700" cy="400" r="8" fill="#818cf8" />
+                <line x1="400" y1="100" x2="612" y2="188" stroke-width="1.5" />
+                <line x1="612" y1="188" x2="700" y2="400" stroke-width="1.5" />
+            </svg>
+        </div>
+
+        <div class="relative z-10">
+            <h2 class="text-3xl text-white font-medium tracking-tight mb-3">Systematise your thinking.</h2>
+            <p class="text-gray-400 font-light text-sm max-w-sm">Log in to access the shared board, map workflows, and automate your operations for free.</p>
+        </div>
+    </div>
+
+    <!-- Right Panel: Form Area -->
+    <div class="w-full md:w-1/2 lg:w-[55%] flex flex-col justify-center items-center p-8 lg:p-24 relative bg-white dark:bg-obsidian transition-colors duration-300">
+        
+        <!-- Mobile Logo -->
+        <div class="md:hidden absolute top-8 left-8 z-10">
+            <div style="width: 100px; height: 44px; position: relative;">
+                <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.75); transform-origin: top left; position: absolute; top: 0; left: 0;">
+                    <a href="index.html" class="brand-group" aria-label="Signal HQ Home">
+                        <div class="word-mark">
+                            <span style="font-weight: 700; letter-spacing: -0.05em;">Signal</span><span style="font-weight: 300; margin-left: 6px; letter-spacing: 0;">HQ</span><span class="signal-dot"></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="document.documentElement.classList.toggle('dark')" class="absolute top-8 right-8 p-2 rounded-full border border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors z-20">
+            <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+            <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
+        </button>
+
+        <div class="w-full max-w-md">
+            <h1 class="text-3xl font-medium tracking-tight mb-2 text-gray-900 dark:text-white">Welcome back</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Enter your details to access your workspaces.</p>
+
+            <!-- Social Logins -->
+            <div class="space-y-3 mb-8">
+                <button class="social-btn">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
+                    Continue with Google
+                </button>
+                <button class="social-btn">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" /></svg>
+                    Continue with GitHub
+                </button>
+            </div>
+
+            <div class="flex items-center gap-4 mb-8">
+                <div class="h-px bg-gray-200 dark:bg-gray-800 flex-grow"></div>
+                <span class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest font-medium">Or</span>
+                <div class="h-px bg-gray-200 dark:bg-gray-800 flex-grow"></div>
+            </div>
+
+            <!-- Email Form -->
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Work Email</label>
+                    <input type="email" placeholder="name@company.com" class="input-field" required>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">Password</label>
+                        <a href="#" class="text-xs text-intelligence hover:text-intelligence-light transition-colors">Forgot password?</a>
+                    </div>
+                    <input type="password" placeholder="••••••••" class="input-field" required>
+                </div>
+                <button type="button" class="w-full py-3 bg-gray-900 dark:bg-white text-white dark:text-black rounded-xl font-medium text-sm hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors mt-4 shadow-md">
+                    Sign In
+                </button>
+            </form>
+
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-8">
+                Don't have an account? <a href="#" class="text-intelligence hover:text-intelligence-light font-medium transition-colors">Sign up for free</a>
+            </p>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>
