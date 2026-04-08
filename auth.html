@@ -11,15 +11,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Clerk SDK (Loaded with correct data attribute) -->
-    <script 
-        async 
-        crossorigin="anonymous" 
-        data-clerk-publishable-key="pk_test_c3VidGxlLWZpbmNoLTIyLmNsZXJrLmFjY291bnRzLmRldiQ" 
-        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
-        type="text/javascript">
-    </script>
-
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -102,7 +93,7 @@
 
         <div class="w-full max-w-md">
             <div id="sign-in-container" class="clerk-wrapper">
-                <!-- Loader -->
+                <!-- Fallback Loading State -->
                 <div id="clerk-loader" class="flex flex-col items-center gap-4">
                     <div class="w-10 h-10 border-4 border-intelligence border-t-transparent rounded-full animate-spin"></div>
                     <p class="text-sm text-gray-500 dark:text-gray-400 animate-pulse">Initializing secure connection...</p>
@@ -112,71 +103,66 @@
     </div>
 
     <script>
-        // Sync theme with Clerk appearance
-        const isDarkMode = () => document.documentElement.classList.contains('dark');
+        const publishableKey = "pk_test_c3VidGxlLWZpbmNoLTIyLmNsZXJrLmFjY291bnRzLmRldiQ";
 
-        window.addEventListener('load', async () => {
-            // Wait for Clerk to be defined on the window
-            const checkClerk = setInterval(async () => {
-                if (window.Clerk) {
-                    clearInterval(checkClerk);
-                    await startClerk();
-                }
-            }, 100);
-
-            // Timeout after 10 seconds
-            setTimeout(() => {
-                clearInterval(checkClerk);
-                if (!window.Clerk) {
-                    document.getElementById('sign-in-container').innerHTML = `
-                        <div class="text-center p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
-                            <p class="text-red-600 dark:text-red-400 font-medium mb-2">Auth Service Unavailable</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Please check your internet connection or ensure the domain is allowed in your Clerk Dashboard.</p>
-                            <button onclick="window.location.reload()" class="mt-4 text-xs font-semibold underline">Retry</button>
-                        </div>
-                    `;
-                }
-            }, 10000);
-        });
-
-        async function startClerk() {
-            const Clerk = window.Clerk;
+        // 1. Initial Load Logic
+        async function initAuth() {
+            const container = document.getElementById('sign-in-container');
+            
             try {
-                await Clerk.load({
+                if (!window.Clerk) {
+                    throw new Error("Clerk SDK not found on window.");
+                }
+
+                await window.Clerk.load({
                     appearance: {
-                        baseTheme: isDarkMode() ? undefined : undefined, // Handled dynamically below
                         variables: { colorPrimary: '#4F46E5' }
                     }
                 });
-                
-                const container = document.getElementById('sign-in-container');
-                container.innerHTML = ''; // Clear loader
 
-                if (Clerk.user) {
+                if (window.Clerk.user) {
                     window.location.href = 'board.html';
                 } else {
-                    Clerk.mountSignIn(container, {
+                    // Clear spinner and mount
+                    container.innerHTML = '';
+                    window.Clerk.mountSignIn(container, {
                         routing: 'hash',
                         afterSignInUrl: 'board.html',
                         afterSignUpUrl: 'board.html'
                     });
                 }
             } catch (err) {
-                console.error('Clerk load error:', err);
+                console.error("Clerk Error:", err);
+                container.innerHTML = `
+                    <div class="text-center p-8 rounded-2xl border border-red-200 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10">
+                        <p class="text-red-600 dark:text-red-400 font-semibold mb-2">Connection Failed</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Make sure you are viewing this via a web server (http://) and not as a local file (file://).</p>
+                        <button onclick="window.location.reload()" class="px-4 py-2 bg-white dark:bg-obsidian border border-gray-200 dark:border-gray-800 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">Try Again</button>
+                    </div>
+                `;
             }
         }
 
-        // Handle Theme Toggle
+        // 2. Load the Script Tag manually for better control
+        const script = document.createElement('script');
+        script.setAttribute('data-clerk-publishable-key', publishableKey);
+        script.async = true;
+        script.src = `https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
+        script.crossOrigin = 'anonymous';
+        script.onload = initAuth;
+        script.onerror = () => {
+            document.getElementById('sign-in-container').innerHTML = '<p class="text-red-500 text-sm">Failed to load auth script. Check your internet connection.</p>';
+        };
+        document.body.appendChild(script);
+
+        // Theme Toggle
         document.getElementById('theme-toggle').addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
-            // Re-mount Clerk to update theme if necessary
-            if (window.Clerk && window.Clerk.user === null) {
+            // Re-mount Clerk to refresh internal theme if needed
+            if (window.Clerk && !window.Clerk.user) {
                 const container = document.getElementById('sign-in-container');
                 container.innerHTML = '';
-                window.Clerk.mountSignIn(container, {
-                    routing: 'hash',
-                    afterSignInUrl: 'board.html'
-                });
+                window.Clerk.mountSignIn(container, { routing: 'hash' });
             }
         });
 
