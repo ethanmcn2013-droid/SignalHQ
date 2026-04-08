@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Assets | Signal HQ</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        obsidian: '#0A0A0A',
+                        intelligence: '#4F46E5',
+                        'intelligence-light': '#818cf8',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #050505; color: white; antialiased; overflow-x: hidden; }
+        
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+
+        .asset-section {
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 6rem;
+            margin-bottom: 6rem;
+        }
+
+        /* --- Template Card Styles --- */
+        .template-card {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .template-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(129, 140, 248, 0.4);
+            box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.15);
+        }
+        .template-preview {
+            background: #0A0A0A;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 10px 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .template-card:hover .template-preview img, 
+        .template-card:hover .template-preview svg {
+            transform: scale(1.05);
+        }
+
+        /* --- Command Palette Styles --- */
+        .cmd-modal-backdrop {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+        }
+        .cmd-palette {
+            background: rgba(15, 15, 15, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset, 0 30px 60px rgba(0,0,0,0.8), 0 0 40px rgba(79, 70, 229, 0.15);
+            transform: scale(0.95);
+            opacity: 0.8;
+            animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes popIn {
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .cmd-item {
+            transition: all 0.2s ease;
+            border-left: 2px solid transparent;
+        }
+        .cmd-item:hover, .cmd-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: #818cf8;
+        }
+        .kbd-key {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom-width: 2px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* --- Pricing Card Styles --- */
+        .pricing-free {
+            background: rgba(20, 20, 20, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .pricing-premium {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(129, 140, 248, 0.4);
+            box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.2) inset, 0 30px 60px -15px rgba(79, 70, 229, 0.2);
+            position: relative;
+        }
+        .pricing-premium::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 10%; right: 10%; height: 1px;
+            background: linear-gradient(90deg, transparent, #818cf8, transparent);
+        }
+
+        /* --- Changelog Styles --- */
+        .timeline-container { position: relative; }
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0; left: 1.5rem;
+            width: 1px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 100%);
+        }
+        .timeline-dot {
+            width: 12px; height: 12px;
+            background: #818cf8;
+            border-radius: 50%;
+            box-shadow: 0 0 12px rgba(129, 140, 248, 0.8);
+            position: absolute;
+            left: 1.5rem;
+            transform: translateX(-50%);
+            margin-top: 6px;
+        }
+        .timeline-dot.minor {
+            background: #4B5563;
+            box-shadow: none;
+            width: 8px; height: 8px;
+        }
+
+        /* --- Zen Mode Styles --- */
+        .zen-canvas {
+            background-color: #050505;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    </style>
+</head>
+<body class="selection:bg-intelligence selection:text-white">
+
+    <div class="absolute inset-0 bg-grid z-0 opacity-40 pointer-events-none fixed"></div>
+    
+    <div class="max-w-7xl mx-auto px-6 py-20 relative z-10">
+
+        <header class="mb-20 text-center">
+            <h1 class="text-4xl font-semibold tracking-tight mb-4">Pro Asset Pack</h1>
+            <p class="text-gray-400 font-light max-w-xl mx-auto">Scaling the platform experience with growth-focused template libraries, unique monetization components, and power-user interfaces.</p>
+        </header>
+
+        <!-- ASSET 1: THE TEMPLATE LIBRARY -->
+        <section class="asset-section">
+            <h2 class="text-xs font-mono font-semibold text-gray-500 uppercase tracking-widest mb-10 border border-white/10 px-4 py-2 rounded-full bg-white/5 w-max mx-auto">Asset 1: System Template Library</h2>
+            
+            <div class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                    <h3 class="text-3xl font-medium text-white mb-2">Kickstart your architecture</h3>
+                    <p class="text-gray-400 font-light">Clone world-class systems directly into your workspace.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-lg transition-colors">Operations</button>
+                    <button class="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg shadow-sm">Engineering</button>
+                    <button class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-lg transition-colors">Marketing</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Template 1 -->
+                <div class="template-card rounded-2xl overflow-hidden group cursor-pointer flex flex-col">
+                    <div class="template-preview h-48 w-full flex items-center justify-center p-6 border-b border-white/10">
+                        <svg viewBox="0 0 200 100" class="w-full h-full stroke-intelligence-light transition-transform duration-700">
+                            <rect x="20" y="40" width="30" height="20" rx="4" fill="#4F46E5" fill-opacity="0.2" stroke-width="2"/>
+                            <rect x="85" y="15" width="30" height="20" rx="4" fill="none" stroke-width="2"/>
+                            <rect x="85" y="65" width="30" height="20" rx="4" fill="none" stroke-width="2"/>
+                            <rect x="150" y="40" width="30" height="20" rx="4" fill="#818cf8" fill-opacity="0.2" stroke-width="2"/>
+                            <path d="M 50 50 L 70 50 L 70 25 L 85 25" fill="none" stroke-width="2" stroke-dasharray="4 4"/>
+                            <path d="M 50 50 L 70 50 L 70 75 L 85 75" fill="none" stroke-width="2" stroke-dasharray="4 4"/>
+                            <path d="M 115 25 L 135 25 L 135 50 L 150 50" fill="none" stroke-width="2"/>
+                            <path d="M 115 75 L 135 75 L 135 50 L 150 50" fill="none" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-2 py-0.5 rounded bg-blue-500/10 text-[10px] font-mono text-blue-400 border border-blue-500/20">Engineering</span>
+                            <span class="px-2 py-0.5 rounded bg-purple-500/10 text-[10px] font-mono text-purple-400 border border-purple-500/20">Automate</span>
+                        </div>
+                        <h4 class="text-lg font-medium text-white mb-2">SaaS Payment Routing</h4>
+                        <p class="text-sm text-gray-400 mb-6 flex-grow">A complete Stripe webhook architecture mapped to Postgres updates and Slack notifications.</p>
+                        <button class="w-full py-2.5 bg-white/5 group-hover:bg-intelligence group-hover:text-white text-gray-300 text-sm font-medium rounded-lg border border-white/10 transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="copy" class="w-4 h-4"></i> Clone System
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Template 2 -->
+                <div class="template-card rounded-2xl overflow-hidden group cursor-pointer flex flex-col">
+                    <div class="template-preview h-48 w-full flex items-center justify-center p-6 border-b border-white/10">
+                        <svg viewBox="0 0 200 100" class="w-full h-full stroke-emerald-400 transition-transform duration-700">
+                            <circle cx="40" cy="50" r="15" fill="#10b981" fill-opacity="0.2" stroke-width="2"/>
+                            <circle cx="100" cy="50" r="25" fill="none" stroke-width="2" stroke-dasharray="4 4"/>
+                            <circle cx="100" cy="50" r="10" fill="#10b981" fill-opacity="0.2" stroke-width="2"/>
+                            <circle cx="160" cy="50" r="15" fill="none" stroke-width="2"/>
+                            <line x1="55" y1="50" x2="75" y2="50" stroke-width="2"/>
+                            <line x1="125" y1="50" x2="145" y2="50" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-[10px] font-mono text-emerald-400 border border-emerald-500/20">Operations</span>
+                            <span class="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-gray-300 border border-white/20">Docs</span>
+                        </div>
+                        <h4 class="text-lg font-medium text-white mb-2">Employee Onboarding</h4>
+                        <p class="text-sm text-gray-400 mb-6 flex-grow">A living document wired to IT provisioning triggers and HR compliance checklists.</p>
+                        <button class="w-full py-2.5 bg-white/5 group-hover:bg-intelligence group-hover:text-white text-gray-300 text-sm font-medium rounded-lg border border-white/10 transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="copy" class="w-4 h-4"></i> Clone System
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Template 3 -->
+                <div class="template-card rounded-2xl overflow-hidden group cursor-pointer flex flex-col">
+                    <div class="template-preview h-48 w-full flex items-center justify-center p-6 border-b border-white/10">
+                        <svg viewBox="0 0 200 100" class="w-full h-full stroke-amber-400 transition-transform duration-700">
+                            <rect x="20" y="20" width="160" height="60" rx="8" fill="none" stroke-width="2" stroke-dasharray="6 6"/>
+                            <rect x="40" y="40" width="20" height="20" rx="4" fill="#fbbf24" fill-opacity="0.2" stroke-width="2"/>
+                            <rect x="90" y="30" width="20" height="40" rx="4" fill="none" stroke-width="2"/>
+                            <rect x="140" y="40" width="20" height="20" rx="4" fill="#fbbf24" fill-opacity="0.2" stroke-width="2"/>
+                            <line x1="60" y1="50" x2="90" y2="50" stroke-width="2"/>
+                            <line x1="110" y1="50" x2="140" y2="50" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-2 py-0.5 rounded bg-amber-500/10 text-[10px] font-mono text-amber-400 border border-amber-500/20">Product</span>
+                            <span class="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-gray-300 border border-white/20">Plan</span>
+                        </div>
+                        <h4 class="text-lg font-medium text-white mb-2">Q3 Launch Architecture</h4>
+                        <p class="text-sm text-gray-400 mb-6 flex-grow">Milestone tracking combined with cross-functional dependency mapping.</p>
+                        <button class="w-full py-2.5 bg-white/5 group-hover:bg-intelligence group-hover:text-white text-gray-300 text-sm font-medium rounded-lg border border-white/10 transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="copy" class="w-4 h-4"></i> Clone System
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ASSET 2: CMD+K PALETTE -->
+        <section class="asset-section relative z-50">
+            <h2 class="text-xs font-mono font-semibold text-gray-500 uppercase tracking-widest mb-10 border border-white/10 px-4 py-2 rounded-full bg-white/5 w-max mx-auto">Asset 2: Command Palette Modal</h2>
+            
+            <div class="w-full h-[600px] border border-white/10 rounded-2xl overflow-hidden relative bg-[#050505] flex items-center justify-center">
+                <!-- The Backdrop -->
+                <div class="absolute inset-0 cmd-modal-backdrop flex items-center justify-center p-4">
+                    <!-- The Palette Modal -->
+                    <div class="cmd-palette w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col max-h-[80vh]">
+                        <!-- Search Input -->
+                        <div class="p-4 flex items-center gap-3 border-b border-white/10 bg-black/50">
+                            <i data-lucide="search" class="w-5 h-5 text-intelligence-light shrink-0"></i>
+                            <input type="text" placeholder="What do you want to build?..." class="w-full bg-transparent border-none text-white text-lg focus:outline-none placeholder-gray-500" value="create">
+                            <span class="text-xs font-mono text-gray-500 bg-white/5 px-2 py-1 rounded border border-white/10 shrink-0">ESC</span>
+                        </div>
+
+                        <!-- Results List -->
+                        <div class="p-2 overflow-y-auto">
+                            <div class="px-3 py-2 text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-2 mb-1">Actions</div>
+                            
+                            <button class="cmd-item active w-full flex items-center justify-between p-3 rounded-lg text-left group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-intelligence-light group-hover:bg-intelligence/10 transition-colors">
+                                        <i data-lucide="git-merge" class="w-4 h-4 text-gray-300 group-hover:text-intelligence-light transition-colors"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-white">Create new Map</div>
+                                        <div class="text-xs text-gray-500">Design a new system architecture</div>
+                                    </div>
+                                </div>
+                                <div class="hidden sm:flex items-center gap-1">
+                                    <kbd class="kbd-key px-1.5 py-0.5 rounded font-mono text-xs">⌘</kbd>
+                                    <kbd class="kbd-key px-1.5 py-0.5 rounded font-mono text-xs">N</kbd>
+                                </div>
+                            </button>
+
+                            <button class="cmd-item w-full flex items-center justify-between p-3 rounded-lg text-left group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-intelligence-light group-hover:bg-intelligence/10 transition-colors">
+                                        <i data-lucide="file-text" class="w-4 h-4 text-gray-300 group-hover:text-intelligence-light transition-colors"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-white">Create new Document</div>
+                                        <div class="text-xs text-gray-500">Write an SOP or architectural brief</div>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <button class="cmd-item w-full flex items-center justify-between p-3 rounded-lg text-left group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-intelligence-light group-hover:bg-intelligence/10 transition-colors">
+                                        <i data-lucide="sparkles" class="w-4 h-4 text-gray-300 group-hover:text-intelligence-light transition-colors"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-white">Generate with Signal AI</div>
+                                        <div class="text-xs text-gray-500">Use AI to draft a system structure</div>
+                                    </div>
+                                </div>
+                                <div class="hidden sm:flex items-center gap-1">
+                                    <kbd class="kbd-key px-1.5 py-0.5 rounded font-mono text-xs">⌘</kbd>
+                                    <kbd class="kbd-key px-1.5 py-0.5 rounded font-mono text-xs">J</kbd>
+                                </div>
+                            </button>
+
+                            <div class="px-3 py-2 text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-4 mb-1">Workspaces</div>
+
+                            <button class="cmd-item w-full flex items-center justify-between p-3 rounded-lg text-left group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                                        <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-white">Billing Engine</div>
+                                        <div class="text-xs text-gray-500">Workspace • 3 Maps, 12 Docs</div>
+                                    </div>
+                                </div>
+                                <div class="hidden sm:flex items-center text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    Jump to <i data-lucide="corner-down-left" class="w-3 h-3 ml-1"></i>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="p-3 border-t border-white/10 bg-white/5 flex items-center justify-between text-xs text-gray-500">
+                            <div class="flex items-center gap-4">
+                                <span class="flex items-center gap-1"><i data-lucide="arrow-up" class="w-3 h-3"></i><i data-lucide="arrow-down" class="w-3 h-3 -ml-1"></i> to navigate</span>
+                                <span class="flex items-center gap-1"><i data-lucide="corner-down-left" class="w-3 h-3"></i> to select</span>
+                            </div>
+                            <div class="font-mono">Signal HQ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ASSET 3: EXECUTION PRICING TABLE -->
+        <section class="asset-section">
+            <h2 class="text-xs font-mono font-semibold text-gray-500 uppercase tracking-widest mb-10 border border-white/10 px-4 py-2 rounded-full bg-white/5 w-max mx-auto">Asset 3: Execution Pricing Tier</h2>
+            
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-medium text-white mb-3">Two ways to build.</h3>
+                <p class="text-gray-400 font-light max-w-lg mx-auto">Use our elite system design software for free, forever. Hire our execution team when you are ready to build it.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                
+                <!-- Free Tier -->
+                <div class="pricing-free rounded-3xl p-8 flex flex-col">
+                    <div class="mb-8">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-white/10 text-xs font-medium text-white mb-6">Software Access</span>
+                        <h4 class="text-4xl font-semibold text-white mb-2">$0 <span class="text-xl text-gray-500 font-normal">/ forever</span></h4>
+                        <p class="text-sm text-gray-400">Unlimited access to the complete Signal HQ suite.</p>
+                    </div>
+                    
+                    <ul class="space-y-4 flex-grow mb-8 text-sm text-gray-300">
+                        <li class="flex gap-3"><i data-lucide="check" class="w-5 h-5 text-gray-500 shrink-0"></i> Unlimited workspaces & maps</li>
+                        <li class="flex gap-3"><i data-lucide="check" class="w-5 h-5 text-gray-500 shrink-0"></i> Real-time multiplayer collaboration</li>
+                        <li class="flex gap-3"><i data-lucide="check" class="w-5 h-5 text-gray-500 shrink-0"></i> Signal Docs & Automate access</li>
+                        <li class="flex gap-3"><i data-lucide="check" class="w-5 h-5 text-gray-500 shrink-0"></i> Community template library</li>
+                    </ul>
+                    
+                    <button class="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl transition-colors">Start Designing for Free</button>
+                </div>
+
+                <!-- Premium Tier -->
+                <div class="pricing-premium rounded-3xl p-8 flex flex-col">
+                    <div class="absolute top-0 right-0 p-8 opacity-20 pointer-events-none">
+                        <i data-lucide="zap" class="w-24 h-24 text-intelligence-light"></i>
+                    </div>
+                    <div class="relative z-10 mb-8">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-intelligence/20 text-xs font-medium text-intelligence-light mb-6 shadow-[0_0_12px_rgba(79,70,229,0.4)]">
+                            <div class="w-1.5 h-1.5 bg-intelligence-light rounded-full animate-pulse"></div> System Execution
+                        </span>
+                        <h4 class="text-4xl font-semibold text-white mb-2">Custom</h4>
+                        <p class="text-sm text-intelligence-light">We step in to build what you've mapped.</p>
+                    </div>
+                    
+                    <ul class="space-y-4 flex-grow mb-8 text-sm text-gray-200 relative z-10">
+                        <li class="flex gap-3"><i data-lucide="check" class="w-5 h-5 text-intelligence-light shrink-0"></i> Dedicated execution architects</li>
+                        <li class="flex gap-3"><i data-lucide="check" class="w-5 h-5 text-intelligence-light shrink-0"></i> Custom software development</li>
+                        <li class="flex gap-3"><i data-lucide="check" class="w-5 h-5 text-intelligence-light shrink-0"></i> Enterprise workflow automation</li>
+                        <li class="flex gap-3"><i data-lucide="check" class="w-5 h-5 text-intelligence-light shrink-0"></i> VIP strategic consulting</li>
+                    </ul>
+                    
+                    <button class="w-full py-3 bg-white text-black font-medium rounded-xl hover:bg-gray-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)] relative z-10">Book a Strategy Call</button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ASSET 4: HIGH-END CHANGELOG -->
+        <section class="asset-section">
+            <h2 class="text-xs font-mono font-semibold text-gray-500 uppercase tracking-widest mb-10 border border-white/10 px-4 py-2 rounded-full bg-white/5 w-max mx-auto">Asset 4: High-End Changelog</h2>
+            
+            <div class="max-w-3xl mx-auto px-4 md:px-12 py-8">
+                <div class="timeline-container space-y-12 pl-12">
+                    
+                    <!-- Major Release -->
+                    <div class="relative">
+                        <div class="timeline-dot"></div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="px-2 py-0.5 rounded bg-intelligence/20 text-xs font-mono text-intelligence-light">v2.4.0</span>
+                            <span class="text-sm text-gray-500">October 12, 2026</span>
+                        </div>
+                        <h3 class="text-2xl font-medium text-white mb-4">Introducing Signal Docs</h3>
+                        <p class="text-gray-400 font-light leading-relaxed mb-6">
+                            Today we are launching Signal Docs—a completely new way to handle your standard operating procedures. Instead of static text files, Signal Docs allows you to embed live system nodes directly into your documentation.
+                        </p>
+                        <div class="rounded-xl border border-white/10 overflow-hidden">
+                            <img src="/api/placeholder/800/400" alt="Signal Docs Preview" class="w-full h-auto opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Minor Update -->
+                    <div class="relative">
+                        <div class="timeline-dot minor"></div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="px-2 py-0.5 rounded bg-white/10 text-xs font-mono text-gray-300">v2.3.5</span>
+                            <span class="text-sm text-gray-500">October 5, 2026</span>
+                        </div>
+                        <h3 class="text-xl font-medium text-white mb-2">Canvas performance upgrades</h3>
+                        <ul class="space-y-2 text-sm text-gray-400 font-light list-disc pl-4">
+                            <li>Optimized rendering for maps exceeding 500 active nodes.</li>
+                            <li>Fixed a bug where SVG connection lines would occasionally clip during fast panning.</li>
+                            <li>Added 14 new keyboard shortcuts to the Command Palette.</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ASSET 5: ZEN MODE -->
+        <section class="asset-section">
+            <h2 class="text-xs font-mono font-semibold text-gray-500 uppercase tracking-widest mb-10 border border-white/10 px-4 py-2 rounded-full bg-white/5 w-max mx-auto">Asset 5: Presentation / Zen Mode</h2>
+            
+            <div class="w-full h-[500px] border border-white/10 rounded-2xl overflow-hidden relative zen-canvas flex items-center justify-center">
+                
+                <!-- Minimal Node Graphic -->
+                <svg viewBox="0 0 400 200" class="w-[60%] h-auto opacity-60">
+                    <rect x="50" y="70" width="80" height="60" rx="8" fill="none" stroke="white" stroke-width="2" stroke-opacity="0.3"/>
+                    <rect x="270" y="70" width="80" height="60" rx="8" fill="#4F46E5" stroke="#818cf8" stroke-width="2" fill-opacity="0.2"/>
+                    <path d="M 130 100 L 250 100" fill="none" stroke="white" stroke-width="2" stroke-dasharray="6 6" stroke-opacity="0.5"/>
+                    <circle cx="270" cy="100" r="4" fill="#818cf8"/>
+                </svg>
+
+                <!-- Floating Zen Toolbar -->
+                <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 flex items-center gap-4 shadow-2xl">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span class="text-xs font-medium text-white">Presenting Live</span>
+                    </div>
+                    <div class="w-px h-4 bg-white/20"></div>
+                    <button class="text-gray-300 hover:text-white transition-colors"><i data-lucide="zoom-in" class="w-4 h-4"></i></button>
+                    <button class="text-gray-300 hover:text-white transition-colors"><i data-lucide="zoom-out" class="w-4 h-4"></i></button>
+                    <div class="w-px h-4 bg-white/20"></div>
+                    <button class="px-3 py-1 bg-white/10 hover:bg-white/20 rounded text-xs font-medium text-white transition-colors flex items-center gap-1">
+                        Exit Zen <kbd class="ml-1 font-mono text-[10px] text-gray-400">ESC</kbd>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ASSET 6: TRANSACTIONAL EMAIL -->
+        <section class="mb-10">
+            <h2 class="text-xs font-mono font-semibold text-gray-500 uppercase tracking-widest mb-10 border border-white/10 px-4 py-2 rounded-full bg-white/5 w-max mx-auto">Asset 6: Transactional Email Template</h2>
+            
+            <div class="max-w-xl mx-auto border border-white/10 rounded-2xl bg-[#050505] overflow-hidden shadow-2xl">
+                <!-- Email Header -->
+                <div class="p-8 border-b border-white/5 flex justify-center">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-xl tracking-tight text-white">Signal<span class="font-light ml-1">HQ</span></span>
+                        <span class="inline-block w-2 h-2 bg-intelligence-light rounded-full ml-1 shadow-[0_0_8px_rgba(129,140,248,0.8)]"></span>
+                    </div>
+                </div>
+                
+                <!-- Email Body -->
+                <div class="p-8">
+                    <h1 class="text-2xl font-medium text-white mb-4">Alex M. invited you to join <br>"Billing Engine"</h1>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-8">
+                        You have been invited to collaborate on a system architecture workspace in Signal HQ. Join the workspace to view maps, read attached documentation, and contribute to the build.
+                    </p>
+                    
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4 mb-8">
+                        <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0 border border-purple-500/20">
+                            <i data-lucide="git-merge" class="w-5 h-5 text-purple-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-white">Billing Engine</h4>
+                            <p class="text-xs text-gray-500 font-mono">Workspace • 14 Assets</p>
+                        </div>
+                    </div>
+
+                    <a href="#" class="block w-full text-center py-3 bg-white text-black font-medium rounded-lg text-sm hover:bg-gray-200 transition-colors mb-8 shadow-md">
+                        Accept Invitation
+                    </a>
+
+                    <p class="text-xs text-gray-500 text-center">
+                        If you're not sure why you received this email, you can safely ignore it.
+                    </p>
+                </div>
+                
+                <!-- Email Footer -->
+                <div class="p-6 bg-white/5 border-t border-white/5 text-center">
+                    <p class="text-xs text-gray-500 mb-2">© 2026 Signal Intelligence Ltd.</p>
+                    <div class="flex items-center justify-center gap-4 text-xs">
+                        <a href="#" class="text-gray-400 hover:text-white underline">Unsubscribe</a>
+                        <a href="#" class="text-gray-400 hover:text-white underline">Privacy Policy</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
