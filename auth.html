@@ -7,7 +7,6 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Using Inter to mimic Apple's San Francisco -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -19,235 +18,146 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        obsidian: '#000000', /* Deeper black for Apple aesthetic */
+                        obsidian: '#0A0A0A',
                         intelligence: '#4F46E5',
                         'intelligence-light': '#818cf8',
-                        'apple-gray': '#f5f5f7',
-                        'apple-dark-card': '#1c1c1e',
-                        'apple-dark-input': '#2c2c2e',
                     }
                 }
             }
         }
     </script>
     <style>
-        body { 
-            transition: background-color 0.4s ease, color 0.4s ease; 
+        .bg-grid-dark {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
         }
         
-        /* Apple-style UI Elements */
-        .apple-card {
-            @apply w-full max-w-[440px] bg-white dark:bg-apple-dark-card sm:rounded-[2.5rem] sm:shadow-[0_8px_40px_rgba(0,0,0,0.08)] dark:sm:shadow-[0_8px_40px_rgba(0,0,0,0.4)] p-10 sm:border border-gray-100 dark:border-white/[0.05] transition-colors duration-300;
-        }
-
-        .apple-input {
-            @apply w-full px-4 py-4 rounded-2xl border border-gray-200 dark:border-white/[0.08] bg-gray-50/50 dark:bg-apple-dark-input text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all text-[15px];
-        }
-
-        .sso-btn {
-            @apply w-full flex items-center justify-center gap-3 px-4 py-4 rounded-2xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-apple-dark-card hover:bg-gray-50 dark:hover:bg-[#252527] transition-all text-[15px] font-medium text-gray-900 dark:text-white shadow-sm dark:shadow-none;
-        }
-
-        /* --- SIGNAL LOGO INTEGRATION STYLES --- */
-        .brand-group {
-            display: flex;
-            flex-direction: column;
-            width: max-content;
-            text-decoration: none;
-            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            will-change: transform;
-            position: relative;
-        }
-
-        .brand-group:hover {
-            transform: scale(1.04);
-        }
-
-        .word-mark {
-            font-family: 'Inter', sans-serif;
-            font-size: 2.75rem;
-            font-weight: 600;
-            line-height: 1.1; 
-            color: #111827; 
-            background: linear-gradient(110deg, #111827 30%, #6B7280 50%, #111827 70%);
-            background-size: 300% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            transition: all 0.5s ease;
-            padding-bottom: 12px; 
-            margin-bottom: -12px; 
-        }
-
-        .brand-group:hover .word-mark {
-            animation: shine 3s linear infinite;
-            filter: drop-shadow(0 4px 12px rgba(17, 24, 39, 0.15));
-        }
-
-        .dark .brand-group:hover .word-mark {
-            filter: drop-shadow(0 4px 16px rgba(255, 255, 255, 0.2));
-        }
-
-        .dark .word-mark {
-            color: #ffffff;
-            background: linear-gradient(110deg, #FFFFFF 30%, rgba(255, 255, 255, 0.5) 50%, #FFFFFF 70%);
-            background-size: 300% auto;
-            -webkit-background-clip: text;
-        }
-
-        @keyframes shine {
-            0% { background-position: 200% center; }
-            100% { background-position: -100% center; }
-        }
-
-        /* --- Pulsing Signal Dot --- */
-        .signal-dot {
-            display: inline-block;
-            position: relative;
-            width: 10px;
-            height: 10px;
-            background-color: #4F46E5;
-            border-radius: 50%;
-            margin-left: 8px;
-            transform: translateY(-8px);
-            box-shadow: 0 0 12px rgba(79, 70, 229, 0.8);
-            animation: pulse-dot 3s ease-in-out infinite;
-        }
-
-        .dark .signal-dot {
-            background-color: #818cf8;
-            box-shadow: 0 0 16px rgba(129, 140, 248, 0.8);
-        }
-
-        .signal-dot::before,
-        .signal-dot::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
+        /* Ensures the Clerk component centers perfectly in our layout */
+        .clerk-wrapper {
             width: 100%;
-            height: 100%;
-            border: 1px solid #4F46E5;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .dark .signal-dot::before,
-        .dark .signal-dot::after {
-            border-color: #818cf8;
-        }
-
-        .brand-group:hover .signal-dot::before {
-            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
-        }
-
-        .brand-group:hover .signal-dot::after {
-            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s infinite;
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: translateY(-8px) scale(1); }
-            50% { opacity: 0.7; transform: translateY(-8px) scale(0.85); }
-        }
-
-        @keyframes emit-double-wave {
-            0% { width: 10px; height: 10px; opacity: 0.8; }
-            15% { width: 45px; height: 45px; opacity: 0; }
-            100% { width: 45px; height: 45px; opacity: 0; }
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
     </style>
 </head>
-<body class="bg-apple-gray dark:bg-obsidian text-gray-900 dark:text-white min-h-screen flex flex-col antialiased selection:bg-intelligence selection:text-white">
+<body class="bg-white dark:bg-[#0A0A0A] text-gray-900 dark:text-white min-h-screen flex flex-col md:flex-row antialiased selection:bg-intelligence selection:text-white">
 
-    <!-- Absolute Theme Toggle -->
-    <button onclick="document.documentElement.classList.toggle('dark')" class="absolute top-8 right-8 p-2 rounded-full border border-gray-200 dark:border-white/10 text-gray-500 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors z-50">
-        <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
-        <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
-    </button>
+    <!-- Left Panel: Brand Visual (Always Dark Mode aesthetic) -->
+    <div class="hidden md:flex md:w-1/2 lg:w-[45%] bg-[#0A0A0A] relative flex-col justify-between p-12 overflow-hidden border-r border-gray-800">
+        <div class="absolute inset-0 bg-grid-dark z-0"></div>
+        <div class="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-intelligence rounded-full filter blur-[150px] opacity-20 pointer-events-none"></div>
 
-    <!-- Main Content Centered -->
-    <main class="flex-1 flex flex-col items-center justify-center w-full px-4 sm:px-6 py-12">
+        <div class="relative z-10">
+            <a href="index.html" class="flex items-center text-white no-underline w-max">
+                <span class="font-bold text-2xl tracking-tight">Signal<span class="font-light ml-1">HQ</span></span>
+                <span class="inline-block w-2.5 h-2.5 bg-intelligence-light rounded-full ml-2 shadow-[0_0_12px_rgba(129,140,248,0.8)]"></span>
+            </a>
+        </div>
+
+        <div class="relative z-10 w-full flex justify-center py-20 pointer-events-none">
+            <!-- Animated Node Graphic -->
+            <svg width="400" height="400" viewBox="0 0 800 800" class="stroke-white/20 animate-[spin_120s_linear_infinite]" fill="none">
+                <circle cx="400" cy="400" r="300" stroke-width="2" stroke-dasharray="4 12" />
+                <circle cx="400" cy="400" r="200" stroke-width="2" />
+                <circle cx="400" cy="400" r="100" stroke-width="2" stroke-dasharray="2 6" />
+                <circle cx="400" cy="100" r="8" fill="#818cf8" />
+                <circle cx="612" cy="188" r="5" fill="#ffffff" />
+                <circle cx="700" cy="400" r="8" fill="#818cf8" />
+                <line x1="400" y1="100" x2="612" y2="188" stroke-width="1.5" />
+                <line x1="612" y1="188" x2="700" y2="400" stroke-width="1.5" />
+            </svg>
+        </div>
+
+        <div class="relative z-10">
+            <h2 class="text-3xl text-white font-medium tracking-tight mb-3">Systematise your thinking.</h2>
+            <p class="text-gray-400 font-light text-sm max-w-sm">Log in to access the shared board, map workflows, and automate your operations for free.</p>
+        </div>
+    </div>
+
+    <!-- Right Panel: Authentication Area -->
+    <div class="w-full md:w-1/2 lg:w-[55%] flex flex-col justify-center items-center p-8 lg:p-24 relative bg-white dark:bg-obsidian transition-colors duration-300">
         
-        <!-- Logo Block -->
-        <div class="mb-10 flex justify-center w-full">
-            <div style="width: 115px; height: 56px; position: relative;">
-                <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.9); transform-origin: top center; position: absolute; top: 0; left: 0; width: 100%; justify-content: center;">
-                    <a href="index.html" class="brand-group" aria-label="Signal HQ Home">
-                        <div class="word-mark">
-                            <span style="font-weight: 700; letter-spacing: -0.05em;">Signal</span><span style="font-weight: 300; margin-left: 6px; letter-spacing: 0;">HQ</span><span class="signal-dot"></span>
-                        </div>
-                    </a>
-                </div>
-            </div>
+        <!-- Mobile Logo -->
+        <div class="md:hidden absolute top-8 left-8">
+            <a href="index.html" class="flex items-center no-underline">
+                <span class="font-bold text-xl tracking-tight text-gray-900 dark:text-white">Signal<span class="font-light ml-1">HQ</span></span>
+                <span class="inline-block w-2 h-2 bg-intelligence rounded-full ml-1.5 shadow-[0_0_8px_rgba(79,70,229,0.8)]"></span>
+            </a>
         </div>
 
-        <!-- Apple-esque Auth Modal -->
-        <div class="apple-card">
+        <button onclick="document.documentElement.classList.toggle('dark')" class="absolute top-8 right-8 p-2 rounded-full border border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors">
+            <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+            <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
+        </button>
+
+        <div class="w-full max-w-md flex flex-col items-center">
             
-            <div class="text-center mb-8">
-                <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white mb-2">Sign in to Signal HQ</h1>
-                <p class="text-[15px] text-gray-500 dark:text-gray-400">Use your company account to continue.</p>
-            </div>
-
-            <!-- Primary SSO Options -->
-            <div class="space-y-3.5 mb-8">
-                <!-- Apple SSO -->
-                <button class="sso-btn">
-                    <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.05 2.25.82 2.98.82.7 0 1.84-.92 3.32-.82 1.34.05 2.51.62 3.2 1.6-2.73 1.63-2.24 5.37.5 6.43-.64 1.85-1.39 3.58-2.01 4.94zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.35 2.39-1.95 4.31-3.74 4.25z"/>
-                    </svg>
-                    Continue with Apple
-                </button>
-
-                <!-- Google SSO -->
-                <button class="sso-btn">
-                    <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
-                    Continue with Google
-                </button>
-
-                <!-- Microsoft SSO -->
-                <button class="sso-btn">
-                    <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none"><path d="M11.4 11.4H0V0H11.4V11.4Z" fill="#F25022"/><path d="M24 11.4H12.6V0H24V11.4Z" fill="#7FBA00"/><path d="M11.4 24H0V12.6H11.4V24Z" fill="#00A4EF"/><path d="M24 24H12.6V12.6H24V24Z" fill="#FFB900"/></svg>
-                    Continue with Microsoft
-                </button>
-            </div>
-
-            <!-- Minimalist Divider -->
-            <div class="flex items-center gap-4 mb-8">
-                <div class="h-px bg-gray-200 dark:bg-white/[0.08] flex-grow"></div>
-                <span class="text-[13px] text-gray-400 dark:text-gray-500 font-medium">or use enterprise email</span>
-                <div class="h-px bg-gray-200 dark:bg-white/[0.08] flex-grow"></div>
-            </div>
-
-            <!-- SAML / Work Email Routing -->
-            <form class="space-y-4">
-                <div class="relative">
-                    <input type="email" placeholder="name@company.com" class="apple-input" required>
-                    <!-- Floating visual cue like Apple forms -->
-                    <div class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none">
-                        <i data-lucide="building" class="w-5 h-5 text-gray-500 dark:text-white"></i>
-                    </div>
+            <!-- This is where Clerk will inject the beautiful Auth UI -->
+            <div id="sign-in-container" class="clerk-wrapper">
+                <!-- Fallback loading state while Clerk initializes -->
+                <div class="animate-pulse flex flex-col items-center">
+                    <div class="w-8 h-8 border-4 border-intelligence border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Loading secure environment...</p>
                 </div>
-                
-                <button type="button" class="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-semibold text-[15px] hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors shadow-md dark:shadow-none">
-                    Continue with SSO
-                </button>
-            </form>
-
-            <div class="mt-8 text-center text-[13px] text-gray-500 dark:text-gray-400">
-                Trouble logging in? <a href="#" class="text-intelligence hover:text-intelligence-light font-medium transition-colors">Contact IT Support</a>
             </div>
 
         </div>
+    </div>
 
-        <!-- Footer Text -->
-        <div class="mt-12 text-center text-xs text-gray-400 dark:text-gray-600">
-            &copy; 2026 Signal Intelligence Platform.<br class="sm:hidden"> All rights reserved.
-        </div>
-
-    </main>
-
-    <script>lucide.createIcons();</script>
+    <!-- Clerk Authentication Script -->
+    <script>
+        // Your actual publishable key
+        const clerkPublishableKey = "pk_test_c3VidGxlLWZpbmNoLTIyLmNsZXJrLmFjY291bnRzLmRldiQ";
+      
+        const startClerk = async () => {
+          const Clerk = window.Clerk;
+          try {
+            await Clerk.load();
+            
+            const signInContainer = document.getElementById('sign-in-container');
+            
+            // Clear the loading spinner
+            signInContainer.innerHTML = '';
+      
+            if (Clerk.user) {
+              // If they are already logged in, redirect them to the app!
+              window.location.href = 'board.html'; 
+            } else {
+              // If not logged in, mount the Sign In component
+              Clerk.mountSignIn(signInContainer, {
+                routing: 'hash',
+                afterSignInUrl: 'board.html',
+                afterSignUpUrl: 'board.html',
+                appearance: {
+                  variables: {
+                    colorPrimary: '#4F46E5', // Matches your "intelligence" purple
+                    colorText: '#111827',
+                  },
+                  elements: {
+                    card: 'shadow-xl rounded-2xl border border-gray-200/50',
+                  }
+                }
+              });
+            }
+          } catch (err) {
+            console.error('Error starting Clerk: ', err);
+            document.getElementById('sign-in-container').innerHTML = '<p class="text-red-500">Failed to load authentication. Please refresh.</p>';
+          }
+        };
+      
+        // Dynamically load the Clerk script
+        const script = document.createElement('script');
+        script.setAttribute('data-clerk-publishable-key', clerkPublishableKey);
+        script.async = true;
+        script.src = `https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
+        script.crossOrigin = 'anonymous';
+        script.addEventListener('load', startClerk);
+        document.body.appendChild(script);
+        
+        lucide.createIcons();
+    </script>
 </body>
 </html>
