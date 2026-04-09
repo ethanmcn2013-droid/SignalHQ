@@ -121,14 +121,14 @@
                 });
 
                 if (window.Clerk.user) {
-                    window.location.href = 'dashboard.html';
+                    window.location.href = 'board.html';
                 } else {
                     // Clear spinner and mount
                     container.innerHTML = '';
                     window.Clerk.mountSignIn(container, {
                         routing: 'hash',
-                        afterSignInUrl: 'dashboard.html',
-                        afterSignUpUrl: 'dashboard.html'
+                        afterSignInUrl: 'board.html',
+                        afterSignUpUrl: 'board.html'
                     });
                 }
             } catch (err) {
