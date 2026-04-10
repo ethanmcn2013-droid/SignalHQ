@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signal HQ | Infinite Canvas Agile Demo</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --brand-blue: #2563eb;
+            --canvas-bg: #f4f5f7;
+            --dot-color: #d1d5db;
+            --ui-bg: #ffffff;
+            --ui-border: #e5e7eb;
+            --ui-text: #374151;
+            
+            /* Cinematic Animation Curves */
+            --bounce-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --swoop-ease: cubic-bezier(0.65, 0, 0.05, 1); /* Fast acceleration, very smooth deceleration */
+            --snap-ease: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #111827; /* Dark backdrop to frame the app */
+            font-family: 'Inter', sans-serif;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+
+        /* --- THE APP CONTAINER --- */
+        .app-container {
+            position: relative;
+            width: 100%;
+            max-width: 1400px; /* Wide view */
+            height: 85vh;
+            min-height: 700px;
+            background-color: var(--canvas-bg);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1);
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- FLOATING UI PANELS --- */
+        .floating-panel {
+            position: absolute;
+            background: var(--ui-bg);
+            border: 1px solid var(--ui-border);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Top Left: Logo & Board Name */
+        .ui-top-left {
+            top: 16px; left: 16px;
+            padding: 6px 16px 6px 6px;
+            gap: 12px;
+        }
+        .board-title {
+            font-size: 0.95rem; font-weight: 700; color: #111827;
+            cursor: pointer; padding: 4px 8px; margin-left: -8px;
+            letter-spacing: -0.01em;
+        }
+        .board-title:hover { background: #f3f4f6; border-radius: 4px; }
+
+        /* Top Right: Collaboration & Share */
+        .ui-top-right {
+            top: 16px; right: 16px;
+            padding: 6px 6px 6px 12px;
+            gap: 12px;
+        }
+        .avatar-stack { display: flex; align-items: center; margin-right: 4px; }
+        .avatar-stack img {
+            width: 32px; height: 32px; border-radius: 50%; border: 2px solid white;
+            margin-left: -10px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .avatar-stack img:first-child { margin-left: 0; }
+        
+        .btn-share {
+            background: var(--brand-blue); color: white;
+            padding: 8px 20px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+            transition: background 0.2s; cursor: pointer;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+        .btn-share:hover { background: #1d4ed8; }
+
+        /* Left Center: Main Tools */
+        .ui-left-tools {
+            top: 50%; left: 16px;
+            transform: translateY(-50%);
+            flex-direction: column;
+            padding: 8px; gap: 6px;
+            border-radius: 12px;
+        }
+        .tool-btn {
+            width: 40px; height: 40px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: #4b5563; font-size: 1.1rem; cursor: pointer; transition: all 0.15s;
+        }
+        .tool-btn:hover { background: #f3f4f6; color: #111827; }
+        .tool-btn.active { background: #eff6ff; color: var(--brand-blue); }
+
+        /* Bottom Right: Zoom */
+        .ui-bottom-right {
+            bottom: 16px; right: 16px;
+            padding: 4px; gap: 2px;
+        }
+        .zoom-btn {
+            width: 36px; height: 36px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            color: #4b5563; font-size: 0.9rem; cursor: pointer; transition: background 0.15s;
+        }
+        .zoom-btn:hover { background: #f3f4f6; color: #111827; }
+        .zoom-level { font-size: 0.8rem; font-weight: 600; color: var(--ui-text); width: 50px; text-align: center; }
+
+        /* --- INFINITE CANVAS ENGINE --- */
+        #viewport {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            cursor: grab; overflow: hidden; touch-action: none;
+        }
+        #viewport:active { cursor: grabbing; }
+        
+        #canvas-plane {
+            position: absolute; top: 0; left: 0;
+            width: 10000px; height: 10000px; 
+            transform-origin: 0 0;
+            background-image: radial-gradient(var(--dot-color) 1.5px, transparent 1.5px);
+            background-size: 32px 32px;
+            background-position: 0 0;
+            will-change: transform;
+            /* Transition controlled dynamically by JS for perfect sync */
+        }
+
+        /* --- CANVAS ELEMENTS --- */
+        .canvas-element { position: absolute; will-change: transform, left, top; }
+
+        /* Structural Frames */
+        .board-frame {
+            border-radius: 20px; background: rgba(255,255,255,0.7);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.04), inset 0 0 0 1px rgba(255,255,255,0.5);
+            z-index: 0; display: flex; flex-direction: column; overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .board-header {
+            padding: 24px 32px; border-bottom: 2px solid rgba(0,0,0,0.05);
+            font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.5rem; color: #111827;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .board-columns { display: flex; flex: 1; }
+        .board-col {
+            flex: 1; border-right: 2px dashed #e5e7eb; padding: 24px; 
+            display: flex; flex-direction: column; gap: 16px; position: relative;
+        }
+        .board-col:last-child { border-right: none; }
+        .col-title { font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-size: 1.1rem;}
+
+        /* Task Cards (Agile Board Style) */
+        .task-card {
+            width: 100%; min-height: 120px; background: white; border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.05);
+            border-left: 6px solid var(--brand-blue); padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+            transition: all 0.2s; z-index: 10;
+        }
+        .task-card.dragging {
+            box-shadow: 15px 30px 50px rgba(0,0,0,0.25), 0 0 0 2px var(--brand-blue) !important;
+            transform: scale(1.08) rotate(3deg) !important; z-index: 50 !important;
+        }
+        .task-tag {
+            align-self: flex-start; padding: 4px 8px; border-radius: 4px;
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        }
+        .task-title { font-size: 1.1rem; font-weight: 600; color: #1f2937; line-height: 1.3; }
+        .task-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .task-footer img { width: 24px; height: 24px; border-radius: 50%; }
+
+        /* Sticky Notes */
+        .sticky-note {
+            width: 220px; min-height: 220px; padding: 1.5rem;
+            border-radius: 2px 16px 16px 16px; 
+            box-shadow: 2px 8px 20px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.5);
+            font-family: 'Kalam', cursive, sans-serif;
+            font-size: 1.6rem; line-height: 1.25; color: #1f2937;
+            display: flex; flex-direction: column;
+            transition: box-shadow 0.2s, transform 0.2s; z-index: 10;
+        }
+        .sticky-note.dragging {
+            box-shadow: 15px 30px 50px rgba(0,0,0,0.25), 0 0 0 3px var(--brand-blue) !important;
+            transform: scale(1.08) rotate(-3deg) !important; z-index: 50 !important;
+        }
+
+        /* Roadmap Epics */
+        .epic-block {
+            border-radius: 8px; padding: 16px 20px; font-weight: 700; font-size: 1.2rem;
+            color: #111827; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center;
+            transition: all 0.2s; z-index: 10; cursor: pointer;
+        }
+        .epic-block.dragging {
+            box-shadow: 15px 30px 50px rgba(0,0,0,0.25), 0 0 0 3px var(--brand-blue) !important;
+            transform: scale(1.05) !important; z-index: 50 !important;
+        }
+        
+        /* Color Utilities */
+        .bg-yellow { background-color: #fef08a; } .border-yellow { border-color: #eab308; } .tag-yellow { background: #fef08a; color: #a16207; }
+        .bg-pink { background-color: #fbcfe8; } .border-pink { border-color: #ec4899; } .tag-pink { background: #fbcfe8; color: #be185d; }
+        .bg-blue { background-color: #bfdbfe; } .border-blue { border-color: #3b82f6; } .tag-blue { background: #dbeafe; color: #1d4ed8; }
+        .bg-green { background-color: #bbf7d0; } .border-green { border-color: #22c55e; } .tag-green { background: #dcfce7; color: #15803d; }
+        .bg-purple { background-color: #e9d5ff; } .border-purple { border-color: #a855f7; } .tag-purple { background: #f3e8ff; color: #7e22ce; }
+
+        .author-tag {
+            margin-top: auto; font-family: 'Inter', sans-serif; font-size: 0.7rem;
+            font-weight: 700; color: rgba(0,0,0,0.4); text-transform: uppercase;
+            padding-top: 12px; display: flex; align-items: center; gap: 6px;
+        }
+
+        /* Real-time Typing */
+        .typing-indicator {
+            display: inline-block; width: 3px; height: 1.4rem;
+            background-color: var(--brand-blue); animation: blink 0.8s step-start infinite;
+            vertical-align: middle; margin-left: 2px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Floating Emoji Reactions */
+        .floating-emoji {
+            position: absolute; font-size: 3.5rem; pointer-events: none; z-index: 60;
+            animation: popReaction 2s var(--snap-ease) forwards;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15));
+            transform-origin: bottom center;
+        }
+        @keyframes popReaction {
+            0% { opacity: 0; transform: translate(-50%, 0) scale(0.2); }
+            20% { opacity: 1; transform: translate(-50%, -50px) scale(1.3) rotate(-15deg); }
+            40% { transform: translate(-50%, -40px) scale(1) rotate(5deg); }
+            80% { opacity: 1; transform: translate(-50%, -40px) scale(1) rotate(0deg); }
+            100% { opacity: 0; transform: translate(-50%, -70px) scale(0.8); }
+        }
+
+        /* --- MULTIPLAYER CURSORS --- */
+        .sim-cursor {
+            position: absolute; z-index: 90; pointer-events: none;
+            display: flex; flex-direction: column; align-items: flex-start;
+        }
+        .sim-cursor svg {
+            transition: transform 0.15s, filter 0.2s;
+            filter: drop-shadow(0px 6px 10px rgba(0,0,0,0.3));
+            transform-origin: top left;
+        }
+        .sim-cursor.clicking svg { transform: scale(0.8) rotate(-5deg); filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.4)); }
+        
+        .cursor-tag {
+            background-color: var(--cursor-color); color: white; padding: 4px 12px;
+            border-radius: 12px; border-top-left-radius: 2px; font-size: 0.85rem; font-weight: 600;
+            margin-left: 14px; margin-top: -2px; white-space: nowrap;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15); transition: opacity 0.2s;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- APP CONTAINER -->
+    <div class="app-container">
+        
+        <!-- Top Left -->
+        <div class="floating-panel ui-top-left">
+            <div class="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center text-white shadow-inner">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+            </div>
+            <div class="board-title">PI-04 Agile Workspace</div>
+        </div>
+
+        <!-- Top Right -->
+        <div class="floating-panel ui-top-right">
+            <div class="avatar-stack">
+                <img src="https://i.pravatar.cc/100?img=1" alt="Chloe" style="z-index: 4;">
+                <img src="https://i.pravatar.cc/100?img=11" alt="David" style="z-index: 3;">
+                <img src="https://i.pravatar.cc/100?img=33" alt="Alex" style="z-index: 2;">
+                <img src="https://i.pravatar.cc/100?img=47" alt="Sam" style="z-index: 1;">
+            </div>
+            <div class="btn-share">Share</div>
+        </div>
+
+        <!-- Left Toolbar -->
+        <div class="floating-panel ui-left-tools">
+            <div class="tool-btn active"><i class="fa-solid fa-arrow-pointer"></i></div>
+            <div class="tool-btn"><i class="fa-regular fa-hand"></i></div>
+            <div class="w-6 h-px bg-gray-200 mx-auto my-1"></div>
+            <div class="tool-btn"><i class="fa-solid fa-t"></i></div>
+            <div class="tool-btn"><i class="fa-regular fa-note-sticky text-yellow-500"></i></div>
+            <div class="tool-btn"><i class="fa-solid fa-shapes"></i></div>
+            <div class="tool-btn"><i class="fa-solid fa-pen"></i></div>
+            <div class="tool-btn"><i class="fa-solid fa-comment-dots text-gray-400"></i></div>
+        </div>
+
+        <!-- Bottom Right Zoom -->
+        <div class="floating-panel ui-bottom-right">
+            <div class="zoom-btn" onclick="adjustZoom(-0.1)"><i class="fa-solid fa-minus"></i></div>
+            <div class="zoom-level" id="zoom-level">100%</div>
+            <div class="zoom-btn" onclick="adjustZoom(0.1)"><i class="fa-solid fa-plus"></i></div>
+        </div>
+
+        <!-- INFINITE CANVAS ENGINE -->
+        <div id="viewport">
+            <div id="canvas-plane">
+
+                <!-- BOARD 1: SPRINT KANBAN -->
+                <div class="canvas-element board-frame" style="left: 2000px; top: 2000px; width: 1600px; height: 1100px;">
+                    <div class="board-header">
+                        <div class="flex items-center gap-4">
+                            <div class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm font-bold uppercase tracking-wider">Active Sprint</div>
+                            Sprint 42 <span class="text-gray-400 font-medium text-lg ml-2">Aug 12 - Aug 26</span>
+                        </div>
+                        <i class="fa-solid fa-ellipsis text-gray-400"></i>
+                    </div>
+                    <div class="board-columns" id="sprint-cols">
+                        <div class="board-col bg-gray-50/50" id="col-todo">
+                            <div class="col-title text-gray-500">To Do</div>
+                            <!-- Dynamic tasks injected here -->
+                        </div>
+                        <div class="board-col bg-blue-50/30" id="col-prog">
+                            <div class="col-title text-blue-600">In Progress</div>
+                            <!-- Dynamic tasks injected here -->
+                        </div>
+                        <div class="board-col bg-purple-50/30" id="col-rev">
+                            <div class="col-title text-purple-600">Review</div>
+                            <!-- Dynamic tasks injected here -->
+                        </div>
+                        <div class="board-col bg-green-50/30" id="col-done">
+                            <div class="col-title text-green-600">Done</div>
+                            <!-- Dynamic tasks injected here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOARD 2: BRAINSTORMING AREA -->
+                <div class="canvas-element" style="left: 4000px; top: 1800px; width: 2400px; height: 1500px;">
+                    <div class="absolute top-[-60px] left-8 text-4xl font-extrabold text-gray-400 opacity-50 tracking-tight">Marketing Brainstorm 💡</div>
+                    <div id="brainstorm-content" class="relative w-full h-full"></div>
+                </div>
+
+                <!-- BOARD 3: ROADMAP / DEPENDENCIES -->
+                <div class="canvas-element board-frame" style="left: 2000px; top: 3400px; width: 4400px; height: 1200px;">
+                    <div class="board-header bg-slate-800 text-white border-b-0">
+                        <div>Q3-Q4 Program Board <span class="text-slate-400 font-medium text-lg ml-2">Epics & Dependencies</span></div>
+                    </div>
+                    <div class="board-columns bg-slate-50">
+                        <div class="board-col"><div class="col-title text-xl text-slate-800">September</div><div id="road-sep" class="flex flex-col gap-4"></div></div>
+                        <div class="board-col"><div class="col-title text-xl text-slate-800">October</div><div id="road-oct" class="flex flex-col gap-4"></div></div>
+                        <div class="board-col"><div class="col-title text-xl text-slate-800">November</div><div id="road-nov" class="flex flex-col gap-4"></div></div>
+                        <div class="board-col"><div class="col-title text-xl text-slate-800">December</div><div id="road-dec" class="flex flex-col gap-4"></div></div>
+                    </div>
+                </div>
+
+                <!-- BOARD 4: METRICS & CHARTS -->
+                <div class="canvas-element board-frame" style="left: 6600px; top: 2000px; width: 1000px; height: 800px;">
+                    <div class="board-header bg-white text-slate-800">
+                        <div>Q3 Performance Metrics 📈</div>
+                    </div>
+                    <div class="p-12 flex flex-col gap-12 h-full bg-slate-50/50">
+                        <div class="flex gap-8 h-full">
+                            <div class="flex-1 bg-white p-8 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                                <div>
+                                    <div class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">Sprint Velocity</div>
+                                    <div class="text-5xl font-black text-slate-800 mb-8">42 <span class="text-lg text-slate-400 font-medium">pts/sprint</span></div>
+                                </div>
+                                <div class="flex items-end gap-6 h-64 border-b-2 border-slate-100 pb-2">
+                                    <div class="w-full bg-blue-100 rounded-t-lg transition-all" style="height: 30%"></div>
+                                    <div class="w-full bg-blue-200 rounded-t-lg transition-all" style="height: 50%"></div>
+                                    <div class="w-full bg-blue-300 rounded-t-lg transition-all" style="height: 40%"></div>
+                                    <div class="w-full bg-blue-400 rounded-t-lg transition-all" style="height: 70%"></div>
+                                    <div class="w-full bg-blue-500 rounded-t-lg transition-all" style="height: 85%"></div>
+                                    <div class="w-full bg-blue-600 rounded-t-lg transition-all" style="height: 100%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOARD 5: MOODBOARD -->
+                <div class="canvas-element board-frame" style="left: 6600px; top: 3000px; width: 1000px; height: 1600px;">
+                    <div class="board-header bg-pink-50 text-pink-900 border-pink-200">
+                        <div>Design Moodboard 🎨</div>
+                    </div>
+                    <div class="p-12 flex flex-wrap gap-8 bg-white h-full align-start content-start">
+                        <div class="w-72 h-72 bg-slate-200 rounded-2xl shadow-sm border border-slate-300"></div>
+                        <div class="w-[500px] h-72 bg-indigo-100 rounded-2xl shadow-sm border border-indigo-200"></div>
+                        <div class="w-[500px] h-[500px] bg-emerald-100 rounded-2xl shadow-sm border border-emerald-200"></div>
+                        <div class="w-72 h-[500px] bg-purple-100 rounded-2xl shadow-sm border border-purple-200"></div>
+                        <div class="w-full h-64 bg-amber-100 rounded-2xl shadow-sm border border-amber-200"></div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Action Layers -->
+                <div id="action-layer" style="position: absolute; inset: 0; z-index: 80; pointer-events: none;"></div>
+                <div id="cursor-layer" style="position: absolute; inset: 0; z-index: 90; pointer-events: none;"></div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- PAN, ZOOM, & CAMERA ENGINE ---
+        const appContainer = document.querySelector('.app-container');
+        const viewport = document.getElementById('viewport');
+        const plane = document.getElementById('canvas-plane');
+        const zoomLabel = document.getElementById('zoom-level');
+        
+        let scale = 1; 
+        let panX = 0; let panY = 0; 
+        
+        // Advanced synchronized camera panning
+        function panTo(targetX, targetY, targetScale, duration = 1.5, ease = 'cubic-bezier(0.65, 0, 0.05, 1)') {
+            scale = targetScale;
+            panX = -(targetX * scale - appContainer.clientWidth / 2);
+            panY = -(targetY * scale - appContainer.clientHeight / 2);
+            
+            plane.style.transition = `transform ${duration}s ${ease}`;
+            plane.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            zoomLabel.innerText = Math.round(scale * 100) + '%';
+        }
+
+        // Manual Override Physics
+        let isUserDragging = false;
+        let startDragX, startDragY;
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.target !== viewport && e.target !== plane) return; 
+            isUserDragging = true;
+            plane.style.transition = 'none'; // Remove transition for 1:1 drag tracking
+            startDragX = e.clientX - panX;
+            startDragY = e.clientY - panY;
+            viewport.style.cursor = 'grabbing';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isUserDragging) return;
+            panX = e.clientX - startDragX;
+            panY = e.clientY - startDragY;
+            plane.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+        });
+
+        window.addEventListener('mouseup', () => { isUserDragging = false; viewport.style.cursor = 'grab'; });
+        window.addEventListener('mouseleave', () => { isUserDragging = false; viewport.style.cursor = 'grab'; });
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (e.ctrlKey || e.metaKey) {
+                plane.style.transition = 'none'; 
+                const zoomFactor = 0.05;
+                const rect = appContainer.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                adjustZoom(e.deltaY > 0 ? -zoomFactor : zoomFactor, mouseX, mouseY);
+            } else {
+                plane.style.transition = 'none'; 
+                panX -= e.deltaX; panY -= e.deltaY;
+                plane.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            }
+        }, { passive: false });
+
+        function adjustZoom(delta, mouseX = appContainer.clientWidth/2, mouseY = appContainer.clientHeight/2) {
+            plane.style.transition = 'none'; 
+            const oldScale = scale;
+            scale = Math.max(0.1, Math.min(scale + 3.0, 3));
+            panX = mouseX - (mouseX - panX) * (scale / oldScale);
+            panY = mouseY - (mouseY - panY) * (scale / oldScale);
+            plane.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            zoomLabel.innerText = Math.round(scale * 100) + '%';
+        }
+
+
+        // --- CONTENT GENERATION HELPERS ---
+        const actionLayer = document.getElementById('action-layer');
+        const cursorLayer = document.getElementById('cursor-layer');
+        const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+        // Data Pools
+        const users = {
+            chloe: { id: 'c', name: 'Chloe', color: '#E91E63', img: '1', el: null },
+            david: { id: 'd', name: 'David', color: '#00BCD4', img: '11', el: null },
+            alex: { id: 'a', name: 'Alex', color: '#8B5CF6', img: '33', el: null }
+        };
+
+        const taskTitles = [
+            "Update onboarding flow", "Fix OAuth token refresh", "Design new billing UI",
+            "Migrate DB to Postgres", "Write API Docs v2", "Optimize image loading",
+            "Resolve Safari layout bug", "Setup DataDog alerts", "Refactor Nav Component",
+            "Update Privacy Policy", "Deploy Redis Cache", "Conduct User Testing"
+        ];
+        
+        const stickyIdeas = [
+            "What if we add AI?", "Needs better mobile UX", "Target Enterprise!",
+            "Reduce churn by 10%", "Webinar series?", "Integration with Slack",
+            "Too much friction here", "Love this idea! 🚀", "Let's test this",
+            "Weekly newsletter?", "Hire more SDRs", "Customer Advisory Board",
+            "Gamify onboarding", "More vibrant colors", "Pricing page revamp",
+            "Better empty states", "Dark mode support", "Export to PDF feature"
+        ];
+
+        // Init Cursors
+        Object.values(users).forEach(u => {
+            u.el = document.createElement('div');
+            u.el.className = 'sim-cursor';
+            u.el.style.setProperty('--cursor-color', u.color);
+            u.el.innerHTML = `
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.5 3L19.5 10.5L12 12.5L9.5 20.5L4.5 3Z" fill="${u.color}" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+                </svg>
+                <div class="cursor-tag">${u.name}</div>
+            `;
+            u.el.style.opacity = '0';
+            cursorLayer.appendChild(u.el);
+        });
+
+        // HTML Builders
+        function createTaskHTML(title, tagClass, tagText, imgId) {
+            return `
+                <div class="task-tag ${tagClass}">${tagText}</div>
+                <div class="task-title">${title}</div>
+                <div class="task-footer">
+                    <i class="fa-solid fa-bars-staggered text-gray-400"></i>
+                    <img src="https://i.pravatar.cc/100?img=${imgId}">
+                </div>
+            `;
+        }
+
+        function createEpicHTML(title, bgClass) {
+            return `<div class="epic-block ${bgClass} border border-gray-200">${title}</div>`;
+        }
+
+        // Build Board Geometry on Load
+        function populateWorkspace() {
+            // 1. Populate Sprint Board
+            const cols = ['todo', 'prog', 'rev', 'done'];
+            const tags = [{c:'tag-blue', t:'Design'}, {c:'tag-purple', t:'Backend'}, {c:'tag-green', t:'Frontend'}];
+            
+            cols.forEach((colId, cIdx) => {
+                const colEl = document.getElementById(`col-${colId}`);
+                const count = colId === 'done' ? 8 : (colId === 'todo' ? 5 : 3);
+                
+                for(let i=0; i<count; i++) {
+                    const card = document.createElement('div');
+                    card.className = `task-card border-${tags[i%3].c.split('-')[1]}`;
+                    card.innerHTML = createTaskHTML(taskTitles[(cIdx*3 + i) % taskTitles.length], tags[i%3].c, tags[i%3].t, [1,11,33,47][i%4]);
+                    
+                    // Specific ID for the card we want to drag later
+                    if(colId === 'prog' && i === 1) card.id = 'demo-drag-task';
+                    
+                    colEl.appendChild(card);
+                }
+            });
+
+            // 2. Populate Brainstorm Area (Dense)
+            const bsArea = document.getElementById('brainstorm-content');
+            const colors = ['bg-yellow', 'bg-pink', 'bg-blue', 'bg-green'];
+            for(let i=0; i<45; i++) { // Increased to 45 notes to look incredibly full
+                const sticky = document.createElement('div');
+                const rot = (Math.random() * 20) - 10;
+                // Clustered towards the center
+                const x = 200 + Math.random() * 1800;
+                const y = 100 + Math.random() * 1200;
+                
+                sticky.className = `canvas-element sticky-note ${colors[i%4]}`;
+                sticky.style.left = `${x}px`; sticky.style.top = `${y}px`;
+                sticky.style.transform = `rotate(${rot}deg)`;
+                sticky.style.zIndex = Math.floor(Math.random() * 10);
+                
+                sticky.innerHTML = `${stickyIdeas[i%stickyIdeas.length]}<div class="author-tag"><img src="https://i.pravatar.cc/100?img=${[1,11,33,47][i%4]}"> ${['Chloe','David','Alex','Sam'][i%4]}</div>`;
+                bsArea.appendChild(sticky);
+            }
+
+            // 3. Populate Roadmap
+            document.getElementById('road-sep').innerHTML = createEpicHTML("Phase 1: Architecture Rewrite", "bg-blue-100 text-blue-900") + createEpicHTML("Design System v2", "bg-purple-100 text-purple-900") + createEpicHTML("User Research", "bg-green-100 text-green-900");
+            document.getElementById('road-oct').innerHTML = createEpicHTML("Phase 2: Data Migration", "bg-blue-100 text-blue-900") + createEpicHTML("User Roles MVP", "bg-green-100 text-green-900");
+            
+            const epicToDrag = document.createElement('div');
+            epicToDrag.id = 'demo-drag-epic';
+            epicToDrag.innerHTML = createEpicHTML("SSO Enterprise Integration", "bg-yellow-100 text-yellow-900");
+            document.getElementById('road-oct').appendChild(epicToDrag);
+            
+            document.getElementById('road-nov').innerHTML = createEpicHTML("Public API Beta", "bg-pink-100 text-pink-900") + createEpicHTML("Marketing Assets", "bg-yellow-100 text-yellow-900");
+            document.getElementById('road-dec').innerHTML = createEpicHTML("Global Marketing Push", "bg-slate-200 text-slate-800");
+        }
+
+
+        // --- CURSOR MOVEMENT & PHYSICS ---
+        async function moveCursor(user, x, y, speed = '0.6s', ease = 'var(--snap-ease)') {
+            user.el.style.opacity = '1';
+            user.el.style.transition = `transform ${speed} ${ease}, filter 0.2s, opacity 0.2s`;
+            user.el.style.transform = `translate(${x}px, ${y}px)`;
+            await sleep(parseFloat(speed) * 1000);
+        }
+
+        async function clickCursor(user) {
+            user.el.classList.add('clicking');
+            await sleep(150);
+            user.el.classList.remove('clicking');
+            await sleep(100);
+        }
+
+        async function popEmoji(x, y, emojiStr) {
+            const emoji = document.createElement('div');
+            emoji.className = 'floating-emoji';
+            emoji.innerText = emojiStr;
+            emoji.style.left = `${x}px`; emoji.style.top = `${y}px`;
+            actionLayer.appendChild(emoji);
+            setTimeout(() => emoji.remove(), 2500);
+        }
+
+        async function typeLiveSticky(user, x, y, colorClass, text) {
+            await moveCursor(user, x + 110, y + 110, '0.5s');
+            await clickCursor(user);
+
+            const sticky = document.createElement('div');
+            sticky.className = `canvas-element sticky-note ${colorClass}`;
+            sticky.style.left = `${x}px`; sticky.style.top = `${y}px`;
+            sticky.style.transform = 'scale(0.5)'; sticky.style.opacity = '0';
+            // append to the absolute plane
+            actionLayer.appendChild(sticky);
+            
+            await sleep(50);
+            sticky.style.transform = `scale(1) rotate(${Math.random()*6-3}deg)`; 
+            sticky.style.opacity = '1';
+            await sleep(150);
+
+            user.el.querySelector('.cursor-tag').style.opacity = '0';
+
+            let currentText = "";
+            for(let i=0; i<text.length; i++) {
+                currentText += text.charAt(i);
+                sticky.innerHTML = currentText + '<span class="typing-indicator"></span>';
+                await sleep(20 + Math.random() * 20); // Extremely fast typing effect
+            }
+            
+            sticky.innerHTML = currentText + `<div class="author-tag"><img src="https://i.pravatar.cc/100?img=${user.img}"> ${user.name}</div>`;
+            user.el.querySelector('.cursor-tag').style.opacity = '1';
+            
+            moveCursor(user, x + 250, y + 280, '0.6s'); // Step away
+            return sticky;
+        }
+
+        // Accurately calculate relative canvas coordinates, regardless of app container layout
+        function getAbsolutePos(el) {
+            const rect = el.getBoundingClientRect();
+            const containerRect = appContainer.getBoundingClientRect();
+            return {
+                x: ((rect.left - containerRect.left) - panX) / scale,
+                y: ((rect.top - containerRect.top) - panY) / scale
+            };
+        }
+
+        // --- THE CHOREOGRAPHY ---
+        const swoopEase = 'cubic-bezier(0.65, 0, 0.05, 1)';
+        const linearEase = 'linear';
+
+        async function runDemo() {
+            // Give layout a moment
+            await sleep(500);
+
+            // 0. The Grand Reveal (Zoomed out to see the massive scale of the board)
+            panTo(4600, 3300, 0.25, 2.0, swoopEase);
+            await sleep(2500);
+
+            // 1. SWOOP to Sprint Board
+            panTo(2800, 2550, 0.8, 1.8, swoopEase);
+            await sleep(1800);
+
+            // Alex drags a task card
+            const dragTask = document.getElementById('demo-drag-task');
+            const dropCol = document.getElementById('col-done');
+            
+            const startPos = getAbsolutePos(dragTask);
+            users.alex.el.style.transform = `translate(${startPos.x + 250}px, ${startPos.y + 400}px)`; // Spawn nearby
+            
+            await moveCursor(users.alex, startPos.x + 150, startPos.y + 60, '0.6s');
+            users.alex.el.classList.add('clicking');
+            
+            // Extract the card and move it to absolute plane for dragging physics
+            const cloneTask = dragTask.cloneNode(true);
+            cloneTask.classList.add('canvas-element', 'dragging');
+            cloneTask.style.left = `${startPos.x}px`; cloneTask.style.top = `${startPos.y}px`;
+            cloneTask.style.width = `${dragTask.offsetWidth}px`; // lock width
+            cloneTask.style.height = `${dragTask.offsetHeight}px`; // lock height
+            actionLayer.appendChild(cloneTask);
+            dragTask.style.opacity = '0'; // hide original
+            await sleep(150);
+
+            // Drag motion
+            const destPos = getAbsolutePos(dropCol);
+            const dropX = destPos.x + 24; 
+            const dropY = destPos.y + dropCol.offsetHeight - 180; // Drop near bottom
+
+            users.alex.el.style.transition = 'transform 1s cubic-bezier(0.25, 1, 0.5, 1)';
+            cloneTask.style.transition = 'transform 0.2s, box-shadow 0.2s, left 1s cubic-bezier(0.25, 1, 0.5, 1), top 1s cubic-bezier(0.25, 1, 0.5, 1)';
+            
+            users.alex.el.style.transform = `translate(${dropX + 150}px, ${dropY + 60}px)`;
+            cloneTask.style.left = `${dropX}px`; cloneTask.style.top = `${dropY}px`;
+            
+            // CAMERA SYNCS WITH THE DRAG (Tracks right)
+            panTo(3200, 2550, 0.8, 1.0, linearEase);
+            
+            await sleep(1000);
+            
+            // Drop
+            users.alex.el.classList.remove('clicking');
+            cloneTask.classList.remove('dragging');
+            cloneTask.classList.remove('canvas-element');
+            cloneTask.style.position = 'relative';
+            cloneTask.style.left = 'auto'; cloneTask.style.top = 'auto';
+            cloneTask.style.width = '100%';
+            
+            dropCol.insertBefore(cloneTask, dropCol.firstChild); // Drop at top of done
+            dragTask.remove(); 
+            await sleep(400);
+
+            // Chloe reacts to the drop
+            users.chloe.el.style.transform = `translate(${dropX + 300}px, ${dropY + 200}px)`;
+            await moveCursor(users.chloe, dropX + 180, dropY + 80, '0.5s');
+            await clickCursor(users.chloe);
+            popEmoji(dropX + 180, dropY + 60, '🔥');
+            popEmoji(dropX + 150, dropY + 90, '🚀');
+            await sleep(1200);
+
+            // 2. SWOOP to Brainstorm Area
+            panTo(5200, 2500, 0.7, 1.5, swoopEase);
+            await sleep(1500);
+
+            // Flurry of Live Typing!
+            users.david.el.style.transform = `translate(4600px, 2800px)`;
+            users.chloe.el.style.transform = `translate(5400px, 2000px)`;
+            users.alex.el.style.transform = `translate(5600px, 2800px)`;
+
+            // Start Camera Drift over the brainstorm area while they type
+            panTo(5600, 2500, 0.7, 3.5, linearEase);
+
+            const t1 = typeLiveSticky(users.david, 4900, 2300, 'bg-blue', 'A/B test the pricing page');
+            await sleep(300);
+            const t2 = typeLiveSticky(users.chloe, 5250, 2100, 'bg-yellow', 'Update the main hero CTA');
+            await sleep(400);
+            const t3 = typeLiveSticky(users.alex, 5400, 2450, 'bg-pink', 'Gamify the onboarding 🎮');
+
+            await Promise.all([t1, t2, t3]);
+            await sleep(800);
+
+            // 3. SWOOP down to Roadmap
+            panTo(4200, 4000, 0.7, 1.5, swoopEase);
+            await sleep(1600);
+
+            // Chloe grabs a giant epic and moves it to November
+            const dragEpic = document.getElementById('demo-drag-epic');
+            const targetCol = document.getElementById('road-nov');
+            
+            const eStart = getAbsolutePos(dragEpic);
+            users.chloe.el.style.transform = `translate(${eStart.x - 200}px, ${eStart.y + 100}px)`;
+            
+            await moveCursor(users.chloe, eStart.x + 150, eStart.y + 30, '0.5s');
+            users.chloe.el.classList.add('clicking');
+            
+            const cloneEpic = dragEpic.cloneNode(true);
+            cloneEpic.classList.add('canvas-element', 'dragging');
+            cloneEpic.style.left = `${eStart.x}px`; cloneEpic.style.top = `${eStart.y}px`;
+            cloneEpic.style.width = `${dragEpic.offsetWidth}px`;
+            cloneEpic.style.height = `${dragEpic.offsetHeight}px`;
+            actionLayer.appendChild(cloneEpic);
+            dragEpic.style.opacity = '0';
+            await sleep(200);
+
+            const eDest = getAbsolutePos(targetCol);
+            const eDropX = eDest.x + 24; 
+            const eDropY = eDest.y + targetCol.offsetHeight - 24;
+
+            users.chloe.el.style.transitionDuration = '1.2s';
+            cloneEpic.style.transition = 'transform 0.2s, box-shadow 0.2s, left 1.2s cubic-bezier(0.25, 1, 0.5, 1), top 1.2s cubic-bezier(0.25, 1, 0.5, 1)';
+            
+            users.chloe.el.style.transform = `translate(${eDropX + 150}px, ${eDropY + 30}px)`;
+            cloneEpic.style.left = `${eDropX}px`; cloneEpic.style.top = `${eDropY}px`;
+            
+            // CAMERA SYNCS WITH THE EPIC DRAG
+            panTo(5000, 4000, 0.7, 1.2, linearEase);
+            
+            await sleep(1200);
+            
+            users.chloe.el.classList.remove('clicking');
+            cloneEpic.classList.remove('dragging', 'canvas-element');
+            cloneEpic.style.position = 'relative';
+            cloneEpic.style.left = 'auto'; cloneEpic.style.top = 'auto';
+            cloneEpic.style.width = '100%';
+            
+            targetCol.appendChild(cloneEpic);
+            dragEpic.remove();
+            await sleep(800);
+
+            // 4. Back to the Grand Reveal
+            moveCursor(users.chloe, 8000, 8000, '2s');
+            moveCursor(users.david, 8000, 8000, '2s');
+            moveCursor(users.alex, 8000, 8000, '2s');
+            
+            panTo(4800, 3200, 0.22, 2.0, swoopEase);
+            
+            // Wait and Reload to loop perfectly
+            await sleep(6000);
+            location.reload(); 
+        }
+
+        window.onload = () => {
+            populateWorkspace();
+            setTimeout(runDemo, 500);
+        };
+
+    </script>
+</body>
+</html>
