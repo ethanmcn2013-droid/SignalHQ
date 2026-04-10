@@ -1,843 +1,860 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signal Map | System Architecture</title>
+    <title>Signal HQ | Process Map Builder Demo</title>
     
-    <!-- Fonts -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Tailwind Config -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class', 
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        obsidian: '#0A0A0A',
-                        intelligence: '#4F46E5',
-                        'intelligence-light': '#818cf8',
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                        'float-delayed': 'float 6s ease-in-out 3s infinite',
-                        'ring-pulse': 'ring-pulse 2.5s ease-in-out infinite',
-                        'spin-slow': 'spin-slow 4s linear infinite',
-                        'flow-data': 'flow-data 3s linear infinite',
-                        'flow-data-fast': 'flow-data 1.5s linear infinite',
-                        'pulse-border': 'pulse-border 3s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-15px)' },
-                        },
-                        'ring-pulse': {
-                            '0%': { transform: 'scale(1)', opacity: '1' },
-                            '50%': { transform: 'scale(1.15)', opacity: '0.7' },
-                            '100%': { transform: 'scale(1)', opacity: '1' },
-                        },
-                        'spin-slow': {
-                            'from': { transform: 'rotate(0deg)' },
-                            'to': { transform: 'rotate(360deg)' },
-                        },
-                        'flow-data': {
-                            '0%': { strokeDashoffset: '24' },
-                            '100%': { strokeDashoffset: '0' },
-                        },
-                        'pulse-border': {
-                            '0%, 100%': { borderColor: 'rgba(245, 158, 11, 0.3)' },
-                            '50%': { borderColor: 'rgba(245, 158, 11, 0.8)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        :root {
+            --bg-platinum: #f5f7f9;
+            --brand-dark: #013220; 
+            --brand-accent: #34A853; /* Green */
+            --brand-google: #4285F4; /* Blue */
+            --brand-orange: #FBBC04; /* Yellow/Orange */
+            --brand-red: #EA4335;    /* Red */
+            --border-color: #d0d7de;
+            --grid-line: rgba(0,0,0,0.04);
+        }
+
         body {
-            overflow-x: hidden;
-            transition: background-color 0.4s ease, color 0.4s ease;
-        }
-
-        /* --- Scroll Reveal Utilities --- */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-            will-change: opacity, transform;
-        }
-        .reveal.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .delay-100 { transition-delay: 100ms; }
-        .delay-200 { transition-delay: 200ms; }
-        .delay-300 { transition-delay: 300ms; }
-        .delay-400 { transition-delay: 400ms; }
-
-        /* Glassmorphism Utilities */
-        .glass {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid transparent;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        
-        #navbar.scrolled {
-            background: rgba(255, 255, 255, 0.9);
-            border-bottom-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .dark #navbar.scrolled {
-            background: rgba(10, 10, 10, 0.85);
-            border-bottom-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .dark .glass {
-            background: rgba(10, 10, 10, 0.5);
-        }
-        
-        .glass-card {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(249, 250, 251, 1) 100%);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease-out;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-            will-change: transform;
-        }
-
-        .dark .glass-card {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
-            border-color: rgba(255, 255, 255, 0.08);
-            box-shadow: none;
-        }
-
-        .glass-card:hover {
-            border-color: rgba(79, 70, 229, 0.3);
-            background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(243, 244, 246, 1) 100%);
-            box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.15);
-        }
-
-        .dark .glass-card:hover {
-            border-color: rgba(79, 70, 229, 0.4);
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-            box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.15);
-        }
-
-        /* Dynamic Grid Background */
-        .bg-grid {
-            background-size: 40px 40px;
+            background-color: var(--bg-platinum);
+            /* Technical blueprint grid background */
             background-image: 
-                linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
-            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+                linear-gradient(var(--grid-line) 1px, transparent 1px), 
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            margin: 0;
+            position: relative; /* Base for absolute layers */
         }
 
-        .dark .bg-grid {
-            background-image: 
-                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-        }
+        h1, h2, h3, h4, .font-montserrat { font-family: 'Montserrat', sans-serif; }
 
-        /* Ambient Cursor Glow */
-        #glow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(79, 70, 229, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-            z-index: -1;
-            transition: opacity 0.5s ease;
-        }
-
-        .dark #glow {
-            background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, rgba(10, 10, 10, 0) 70%);
-        }
-
-        /* Clean Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #F9FAFB;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #D1D5DB;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #9CA3AF;
-        }
-        .dark ::-webkit-scrollbar-track { background: #0A0A0A; }
-        .dark ::-webkit-scrollbar-thumb { background: #333; }
-        .dark ::-webkit-scrollbar-thumb:hover { background: #555; }
-
-        /* --- SIGNAL LOGO INTEGRATION STYLES --- */
-        .brand-group {
+        /* --- BUILDER TOOLBAR --- */
+        .builder-toolbar {
+            width: 60px;
+            background: #ffffff;
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            width: max-content;
-            text-decoration: none;
-            /* Smooth scaling transition for the whole logo block */
-            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            will-change: transform;
+            align-items: center;
+            padding: 1rem 0;
+            gap: 1rem;
+            z-index: 50;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+        }
+
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .tool-btn:hover, .tool-btn.active {
+            background: #f1f5f9;
+            color: var(--brand-google);
+            border-color: #e2e8f0;
+        }
+
+        .color-palette {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: auto;
+            margin-bottom: 1rem;
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .color-swatch {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* --- CANVAS & HEADER --- */
+        .canvas-area {
+            flex: 1;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
-        .brand-group:hover {
-            transform: scale(1.04);
+        .canvas-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            background: linear-gradient(to bottom, rgba(245, 247, 249, 1) 0%, rgba(245, 247, 249, 0.8) 100%);
+            backdrop-filter: blur(4px);
+            z-index: 40;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .word-mark {
-            font-family: 'Inter', sans-serif;
-            font-size: 2.75rem;
+        .header-eyebrow {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
             font-weight: 600;
-            line-height: 1.1; 
-            color: #111827; 
-            
-            /* Enhanced gradient with a 300% background size for the shimmer effect */
-            background: linear-gradient(110deg, #111827 30%, #6B7280 50%, #111827 70%);
-            background-size: 300% auto;
-            
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            transition: all 0.5s ease;
-            padding-bottom: 12px; 
-            margin-bottom: -12px; 
         }
 
-        /* Activate the shine animation and add a subtle backlit glow on hover */
-        .brand-group:hover .word-mark {
-            animation: shine 3s linear infinite;
-            filter: drop-shadow(0 4px 12px rgba(17, 24, 39, 0.15));
-        }
-
-        .dark .brand-group:hover .word-mark {
-            filter: drop-shadow(0 4px 16px rgba(255, 255, 255, 0.2));
-        }
-
-        .dark .word-mark {
-            color: #ffffff;
-            background: linear-gradient(110deg, #FFFFFF 30%, rgba(255, 255, 255, 0.5) 50%, #FFFFFF 70%);
-            background-size: 300% auto;
-            -webkit-background-clip: text;
-        }
-
-        @keyframes shine {
-            0% { background-position: 200% center; }
-            100% { background-position: -100% center; }
-        }
-
-        /* --- Pulsing Signal Dot & Wave Emissions --- */
-        .signal-dot {
+        /* Editable Title Styles */
+        .editable-title {
+            outline: none;
+            border-bottom: 2px dashed transparent;
+            transition: border-bottom-color 0.2s, background-color 0.2s;
+            padding: 2px 8px;
+            margin-left: -8px; 
+            border-radius: 4px;
             display: inline-block;
-            position: relative;
-            width: 10px;
-            height: 10px;
-            background-color: #4F46E5; /* The 'intelligence' purple from your theme */
-            border-radius: 50%;
-            margin-left: 8px;
-            transform: translateY(-8px); /* Optically aligns with the top of the text */
-            box-shadow: 0 0 12px rgba(79, 70, 229, 0.8);
-            animation: pulse-dot 3s ease-in-out infinite;
-        }
-
-        .dark .signal-dot {
-            background-color: #818cf8; /* The 'intelligence-light' from your theme */
-            box-shadow: 0 0 16px rgba(129, 140, 248, 0.8);
-        }
-
-        /* The invisible rings that will expand */
-        .signal-dot::before,
-        .signal-dot::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            height: 100%;
-            border: 1px solid #4F46E5;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .dark .signal-dot::before,
-        .dark .signal-dot::after {
-            border-color: #818cf8;
-        }
-
-        /* Trigger the wave animations on hover */
-        .brand-group:hover .signal-dot::before {
-            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
-        }
-
-        .brand-group:hover .signal-dot::after {
-            animation: emit-double-wave 5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s infinite;
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: translateY(-8px) scale(1); }
-            50% { opacity: 0.7; transform: translateY(-8px) scale(0.85); }
-        }
-
-        @keyframes emit-double-wave {
-            0% { width: 10px; height: 10px; opacity: 0.8; }
-            15% { width: 45px; height: 45px; opacity: 0; }
-            100% { width: 45px; height: 45px; opacity: 0; }
-        }
-
-        /* --- APPLE-STYLE SHIMMER EFFECT --- */
-        .shimmer-text {
-            color: #9CA3AF; 
-            background: linear-gradient(110deg, #9CA3AF 40%, #FFFFFF 50%, #9CA3AF 60%);
-            background-size: 300% auto; 
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shimmer-text 15s linear infinite; 
-        }
-
-        .dark .shimmer-text {
-            background: linear-gradient(110deg, rgba(255,255,255,0.4) 40%, #FFFFFF 50%, rgba(255,255,255,0.4) 60%);
-            -webkit-background-clip: text;
-        }
-
-        .shimmer-text-hero {
-            color: #111827; 
-            background: linear-gradient(110deg, #111827 40%, #E5E7EB 50%, #111827 60%);
-            background-size: 300% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shimmer-text 15s linear infinite;
-        }
-
-        .dark .shimmer-text-hero {
-            color: #ffffff;
-            background: linear-gradient(110deg, rgba(255,255,255,0.8) 40%, #FFFFFF 50%, rgba(255,255,255,0.8) 60%);
-            -webkit-background-clip: text;
-        }
-
-        @keyframes shimmer-text {
-            0% { background-position: 100% center; }
-            22% { background-position: 0% center; }
-            100% { background-position: 0% center; }
-        }
-
-        /* --- SVG Path Animation Utilities --- */
-        .path-animated {
-            stroke-dasharray: 8 16;
-            animation: flow-data 2s linear infinite;
+            min-width: 300px;
         }
         
-        .path-animated-fast {
-            stroke-dasharray: 6 12;
-            animation: flow-data-fast 1s linear infinite;
+        .editable-title:hover, .editable-title:focus {
+            border-bottom-color: #cbd5e1;
+            background-color: rgba(255, 255, 255, 0.6);
+            cursor: text;
         }
+
+        /* Fake Blinking Cursor for Typing Animation */
+        .typing-caret::after, .typing-caret-div::after {
+            content: '|';
+            color: var(--brand-google);
+            animation: blink 1s step-start infinite;
+            font-weight: 300;
+            margin-left: 2px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* --- PROCESS MAP ELEMENTS --- */
+        .map-workspace {
+            flex: 1;
+            position: relative;
+            padding: 2rem;
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        /* Elements are hidden initially for the animation */
+        .demo-element {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            display: none; 
+        }
+        .demo-element.visible {
+            opacity: 1;
+            transform: scale(1);
+            display: flex; 
+        }
+
+        .phase-col {
+            display: flex;
+            flex-direction: column;
+            width: 280px;
+            gap: 0.5rem;
+        }
+
+        .phase-label {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--brand-dark);
+            text-transform: uppercase;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 4px;
+            margin-bottom: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .phase-label.visible { opacity: 1; }
+
+        .phase-container {
+            border: 2px dashed #cbd5e1; 
+            border-radius: 12px;
+            padding: 1.5rem 1rem 1rem 1rem;
+            display: none; 
+            flex-direction: column;
+            gap: 0.75rem;
+            min-height: 120px;
+            position: relative;
+            transition: all 0.4s ease;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .phase-container.visible { display: flex; }
+
+        .phase-container.styled-green {
+            border-style: solid;
+            border-color: var(--brand-accent);
+            background: rgba(232, 245, 233, 0.4);
+        }
+        .phase-container.styled-blue {
+            border-style: solid;
+            border-color: var(--brand-google);
+            background: rgba(227, 242, 253, 0.4);
+        }
+
+        /* In-Container Add Button */
+        .add-node-btn {
+            border: 2px dashed #cbd5e1;
+            border-radius: 6px;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(255,255,255,0.5);
+            width: 100%;
+            margin-top: auto; 
+        }
+        .add-node-btn:hover, .add-node-btn.hovered {
+            border-color: var(--brand-google);
+            color: var(--brand-google);
+            background: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Node styling */
+        .process-node {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            z-index: 20;
+            transition: all 0.3s ease;
+            border-left-width: 4px;
+            border-left-color: #ccc; 
+        }
+        
+        .process-node.colored-blue { border-left-color: var(--brand-google); }
+        .process-node.colored-green { border-left-color: var(--brand-accent); }
+        .process-node.colored-orange { border-left-color: var(--brand-orange); }
+        .process-node.colored-red { border-left-color: var(--brand-red); }
+
+        .node-icon { font-size: 1.1rem; color: #666; width: 24px; text-align: center; }
+        .colored-blue .node-icon { color: var(--brand-google); }
+        .colored-green .node-icon { color: var(--brand-accent); }
+        .colored-orange .node-icon { color: var(--brand-orange); }
+        .colored-red .node-icon { color: var(--brand-red); }
+
+        .node-title { font-weight: 700; font-size: 0.75rem; margin-bottom: 2px; color: #111;}
+        .node-sub { font-size: 0.65rem; color: #666; line-height: 1.2; }
+
+        /* SVG Connectors - Now absolute to body for perfect screen coordinates */
+        #svg-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 15;
+        }
+
+        .connector-line {
+            fill: none;
+            stroke: var(--brand-google);
+            stroke-width: 2px;
+            stroke-dasharray: 6, 4;
+            marker-end: url(#arrow-flow);
+            stroke-dashoffset: 1000;
+            transition: stroke-dashoffset 0.6s linear;
+        }
+        .connector-line.drawn {
+            stroke-dashoffset: 0;
+            animation: flow-dash 20s linear infinite forwards;
+        }
+
+        @keyframes flow-dash {
+            to { stroke-dashoffset: -400; }
+        }
+
+        /* --- DEMO CURSOR --- */
+        .demo-cursor {
+            position: fixed;
+            z-index: 9999;
+            pointer-events: none;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translate(50vw, 100vh);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .demo-cursor svg {
+            transition: transform 0.1s, filter 0.2s;
+            filter: drop-shadow(0px 3px 6px rgba(0,0,0,0.3));
+        }
+        .demo-cursor.clicking svg {
+            transform: scale(0.85);
+            filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.4));
+        }
+
+        .cursor-ghost {
+            opacity: 0;
+            background: white;
+            border: 1px solid var(--brand-google);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--brand-google);
+            margin-left: 12px;
+            margin-top: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: opacity 0.2s;
+        }
+        .demo-cursor.carrying .cursor-ghost { opacity: 1; }
+
     </style>
 </head>
-<body class="antialiased selection:bg-intelligence selection:text-white relative bg-white text-gray-900 dark:bg-obsidian dark:text-white">
+<body>
 
-    <!-- Ambient Glow Element -->
-    <div id="glow"></div>
+    <!-- SVG Layer for drawing lines (Absolute root layer for perfect coords) -->
+    <svg id="svg-layer">
+        <defs>
+            <marker id="arrow-flow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,8 L8,4 z" fill="#4285F4" />
+            </marker>
+        </defs>
+        <path class="connector-line" id="line-1" stroke-dasharray="1000" stroke-dashoffset="1000"></path>
+        <path class="connector-line" id="line-2" stroke-dasharray="1000" stroke-dashoffset="1000"></path>
+        <path class="connector-line" id="line-3" stroke-dasharray="1000" stroke-dashoffset="1000"></path>
+    </svg>
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 glass" id="navbar">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            
-            <!-- Scaled Wordmark Lockup -->
-            <div style="width: 115px; height: 56px; position: relative; z-index: 10;">
-                <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.9); transform-origin: top left; position: absolute; top: 0; left: 0;">
-                    <a href="index.html" class="brand-group" aria-label="Signal HQ Home">
-                        <div class="word-mark">
-                            <span style="font-weight: 700; letter-spacing: -0.05em;">Signal</span><span style="font-weight: 300; margin-left: 6px; letter-spacing: 0;">HQ</span><span class="signal-dot"></span>
-                        </div>
-                    </a>
-                </div>
-            </div>
-
-            <div class="hidden md:flex items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
-                <a href="index.html#suite" class="text-gray-900 dark:text-white font-medium transition-colors">Suite</a>
-                <a href="index.html#how-it-works" class="hover:text-gray-900 dark:hover:text-white transition-colors">How it Works</a>
-                <a href="signal_services.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Services</a>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <!-- Fluid Dark Mode Toggle -->
-                <button id="theme-toggle" class="p-2 rounded-full border border-gray-200 dark:border-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-all focus:outline-none">
-                    <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
-                    <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
-                </button>
-
-                <a href="#cta" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all px-4 py-2 rounded-full border border-gray-200 dark:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 hidden sm:block">Work with us</a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- 1. PRODUCT HERO SECTION -->
-    <section class="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 overflow-hidden">
-        <!-- Background Grid -->
-        <div class="absolute inset-0 bg-grid z-[-2]"></div>
+    <!-- Fake Toolbar -->
+    <div class="builder-toolbar">
+        <div class="tool-btn" id="tool-select"><i class="fa-solid fa-arrow-pointer text-sm"></i></div>
+        <div class="tool-btn" id="tool-container" title="Add Phase"><i class="fa-regular fa-square"></i></div>
+        <div class="tool-btn" id="tool-line" title="Connect"><i class="fa-solid fa-arrow-right-long"></i></div>
         
-        <div class="max-w-5xl mx-auto px-6 text-center z-10 w-full">
-            <div class="reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-intelligence/30 bg-intelligence/10 text-xs font-medium text-intelligence dark:text-intelligence-light mb-8 shadow-sm">
-                <i data-lucide="git-merge" class="w-3.5 h-3.5"></i>
-                Signal Map
+        <div class="color-palette">
+            <div class="color-swatch" id="color-blue" style="background: var(--brand-google);"></div>
+            <div class="color-swatch" id="color-green" style="background: var(--brand-accent);"></div>
+            <div class="color-swatch" id="color-orange" style="background: var(--brand-orange);"></div>
+            <div class="color-swatch" id="color-red" style="background: var(--brand-red);"></div>
+        </div>
+    </div>
+
+    <!-- Main Canvas -->
+    <div class="canvas-area">
+        
+        <!-- Header -->
+        <div class="canvas-header">
+            <div>
+                <div class="header-eyebrow">Signal Map Builder</div>
+                <h1 id="map-title" class="text-2xl font-montserrat font-bold text-gray-900 mt-1 uppercase tracking-tight editable-title" contenteditable="true" spellcheck="false">Basic Workflow Demo</h1>
             </div>
             
-            <h1 class="reveal delay-100 text-5xl md:text-7xl lg:text-8xl font-medium tracking-tighter mb-6 text-gray-900 dark:text-white">
-                Design complex systems.<br><span class="shimmer-text-hero">Zero design effort.</span>
-            </h1>
-            
-            <p class="reveal delay-200 text-lg md:text-xl text-gray-600 dark:text-white/60 max-w-2xl mx-auto mb-16 leading-relaxed font-light">
-                Map complex workflows, route logic, and define architecture on a high-fidelity intelligent canvas—without writing a single line of code.
-            </p>
-            
-            <!-- Abstract Map/Flowchart Representation -->
-            <div class="reveal delay-300 relative w-full h-72 md:h-96 rounded-3xl glass-card overflow-hidden border border-gray-200 dark:border-white/10 bg-white/50 dark:bg-obsidian/50 shadow-2xl">
-                <!-- Inner Infinite Grid -->
-                <div class="absolute inset-0 bg-grid opacity-30 dark:opacity-20 scale-150 transform origin-center"></div>
-                
-                <!-- Connective Dependency Lines (SVGs) -->
-                <svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 1;">
-                    <!-- Line 1 to 2 (Straight) -->
-                    <path d="M 25% 50% L 40% 50%" fill="none" stroke="currentColor" stroke-width="2" class="text-intelligence opacity-50 path-animated"></path>
-                    <!-- Line 2 to 3 (Top Route) -->
-                    <path d="M 50% 45% L 50% 30% L 70% 30%" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400 dark:text-gray-600 path-animated" stroke-linejoin="round"></path>
-                    <!-- Line 2 to 4 (Bottom Route) -->
-                    <path d="M 50% 55% L 50% 70% L 70% 70%" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400 dark:text-gray-600 path-animated" stroke-linejoin="round"></path>
-                </svg>
-
-                <!-- Node 1 (Start/Pill) -->
-                <div class="absolute top-[50%] left-[20%] -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center group cursor-pointer">
-                    <div class="w-16 h-10 bg-white dark:bg-obsidian border border-gray-200 dark:border-white/20 rounded-full shadow-lg flex items-center justify-center transform transition-transform group-hover:scale-105 duration-300 group-hover:border-intelligence/50">
-                        <span class="text-[10px] font-semibold text-gray-700 dark:text-white/80 tracking-wide uppercase">Trigger</span>
-                    </div>
+            <!-- Collaborative Action Group -->
+            <div class="flex items-center gap-4">
+                <div class="flex items-center -space-x-2 mr-2">
+                    <img class="w-8 h-8 rounded-full border-2 border-white relative z-30 shadow-sm" src="https://i.pravatar.cc/100?img=1" alt="User 1">
+                    <img class="w-8 h-8 rounded-full border-2 border-white relative z-20 shadow-sm" src="https://i.pravatar.cc/100?img=5" alt="User 2">
+                    <div class="w-8 h-8 rounded-full border-2 border-white relative z-10 shadow-sm bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">+3</div>
                 </div>
-
-                <!-- Node 2 (Decision/Diamond) -->
-                <div class="absolute top-[50%] left-[45%] -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center group cursor-pointer">
-                    <div class="w-14 h-14 bg-intelligence border border-intelligence-light/50 rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.3)] flex items-center justify-center transform rotate-45 transition-transform group-hover:scale-110 duration-300 relative overflow-hidden">
-                        <div class="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-colors"></div>
-                        <i data-lucide="split" class="w-6 h-6 text-white -rotate-45 relative z-10"></i>
-                    </div>
-                </div>
-
-                <!-- Node 3 (Action/Rectangle Top) -->
-                <div class="absolute top-[30%] left-[75%] -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center group cursor-pointer">
-                    <div class="w-28 h-12 bg-white dark:bg-obsidian border border-gray-200 dark:border-white/20 rounded-lg shadow-lg flex items-center justify-center transform transition-transform group-hover:scale-105 duration-300 px-3 hover:border-emerald-500/50">
-                        <div class="w-2 h-2 rounded-full bg-emerald-500 mr-2 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                        <span class="text-[10px] font-semibold text-gray-600 dark:text-white/70 tracking-wide uppercase truncate">Auto-Route</span>
-                    </div>
-                </div>
-
-                <!-- Node 4 (Action/Rectangle Bottom) -->
-                <div class="absolute top-[70%] left-[75%] -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center group cursor-pointer">
-                    <div class="w-28 h-12 bg-white dark:bg-obsidian border border-gray-200 dark:border-white/20 rounded-lg shadow-lg flex items-center justify-center transform transition-transform group-hover:scale-105 duration-300 px-3 hover:border-amber-500/50">
-                        <div class="w-2 h-2 rounded-full bg-amber-500 mr-2 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
-                        <span class="text-[10px] font-semibold text-gray-600 dark:text-white/70 tracking-wide uppercase truncate">Manual Review</span>
-                    </div>
-                </div>
+                <button class="bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-gray-50 transition shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Export
+                </button>
+                <button id="btn-share" class="bg-[#4285F4] text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:bg-blue-600 transition shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus"></i> Share
+                </button>
             </div>
         </div>
-    </section>
 
-    <!-- 2. CORE FEATURES (System Building Blocks) -->
-    <section class="py-32 relative bg-gray-50/50 dark:bg-white/[0.02] border-y border-gray-200 dark:border-white/5">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="reveal mb-20 text-center">
-                <h2 class="text-3xl md:text-5xl font-medium tracking-tight mb-4 text-gray-900 dark:text-white">The System Building Blocks</h2>
-                <p class="text-gray-500 dark:text-white/50 text-lg max-w-2xl mx-auto">Everything required to design, visualize, and communicate operational complexity.</p>
+        <!-- Workspace -->
+        <div class="map-workspace">
+            
+            <!-- Phase 1 -->
+            <div class="phase-col">
+                <span class="phase-label" id="label-1">Phase 01. Input</span>
+                <div class="phase-container demo-element" id="container-1">
+                    
+                    <div class="process-node demo-element" id="node-1">
+                        <i class="fa-solid fa-globe node-icon"></i>
+                        <div>
+                            <div class="node-title">Receive Request</div>
+                            <div class="node-sub">Incoming Data</div>
+                        </div>
+                    </div>
+
+                    <div class="process-node demo-element" id="node-2">
+                        <i class="fa-solid fa-check-double node-icon"></i>
+                        <div>
+                            <div class="node-title">Validate Data</div>
+                            <div class="node-sub">Check Requirements</div>
+                        </div>
+                    </div>
+
+                    <!-- In-container Add Button -->
+                    <div class="add-node-btn demo-element" id="add-btn-1">
+                        <i class="fa-solid fa-plus"></i> Add Step
+                    </div>
+
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                
-                <!-- The Infinite Canvas -->
-                <div class="reveal delay-100 glass-card p-10 rounded-3xl group relative overflow-hidden flex flex-col h-full">
-                    <div class="mb-8 relative z-10">
-                        <div class="w-14 h-14 rounded-2xl bg-white dark:bg-obsidian border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6 shadow-sm group-hover:border-intelligence/50 transition-colors">
-                            <i data-lucide="maximize" class="w-6 h-6 text-gray-800 dark:text-white"></i>
+            <!-- Phase 2 -->
+            <div class="phase-col">
+                <span class="phase-label" id="label-2">Phase 02. Processing</span>
+                <div class="phase-container demo-element" id="container-2">
+                    
+                    <div class="process-node demo-element" id="node-3">
+                        <i class="fa-solid fa-gears node-icon"></i>
+                        <div>
+                            <div class="node-title">Process Task</div>
+                            <div class="node-sub">Execute Logic</div>
                         </div>
-                        <h3 class="text-2xl font-medium mb-4 text-gray-900 dark:text-white">The Infinite Canvas</h3>
-                        <p class="text-gray-600 dark:text-white/60 leading-relaxed font-light">An unbound workspace designed for scale. Drag and drop elements freely, while our smart snap-to-grid engine perfectly aligns your architecture in real time.</p>
                     </div>
-                    <div class="absolute top-0 right-0 p-8 opacity-20 dark:opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
-                        <svg width="120" height="120" viewBox="0 0 40 40">
-                            <path d="M0 10h40M0 20h40M0 30h40M10 0v40M20 0v40M30 0v40" stroke="currentColor" stroke-width="1" class="text-gray-900 dark:text-white"/>
-                            <rect x="9.5" y="9.5" width="21" height="21" fill="none" stroke="#4F46E5" stroke-width="2" class="opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
-                        </svg>
-                    </div>
-                </div>
 
-                <!-- Interactive Nodes -->
-                <div class="reveal delay-200 glass-card p-10 rounded-3xl group relative overflow-hidden flex flex-col h-full">
-                    <div class="mb-8 relative z-10">
-                        <div class="w-14 h-14 rounded-2xl bg-white dark:bg-obsidian border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6 shadow-sm group-hover:border-intelligence/50 transition-colors">
-                            <i data-lucide="layers" class="w-6 h-6 text-gray-800 dark:text-white"></i>
-                        </div>
-                        <h3 class="text-2xl font-medium mb-4 text-gray-900 dark:text-white">Interactive Nodes</h3>
-                        <p class="text-gray-600 dark:text-white/60 leading-relaxed font-light">Every process step is a clickable card. Double-click to edit titles, assign owners, and drill down into detailed execution steps hiding beneath the surface.</p>
-                    </div>
-                    <div class="absolute bottom-6 right-8 opacity-90 pointer-events-none transform group-hover:-translate-y-2 transition-transform duration-500">
-                        <div class="w-32 h-16 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-white/20 rounded-xl shadow-lg flex flex-col justify-center px-4">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="w-2 h-2 rounded-full bg-intelligence"></div>
-                                <div class="h-2 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                            </div>
-                            <div class="h-1.5 w-10 bg-gray-100 dark:bg-gray-800 rounded"></div>
-                        </div>
-                        <div class="absolute -bottom-3 -right-3 w-8 h-8 rounded-full bg-white dark:bg-obsidian border border-gray-200 dark:border-white/20 shadow-md flex items-center justify-center">
-                            <i data-lucide="mouse-pointer-2" class="w-3.5 h-3.5 text-gray-500 dark:text-white/50"></i>
+                    <div class="process-node demo-element" id="node-4">
+                        <i class="fa-solid fa-magnifying-glass node-icon"></i>
+                        <div>
+                            <div class="node-title">Review Output</div>
+                            <div class="node-sub">Quality Check</div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Intelligent Routing -->
-                <div class="reveal delay-100 glass-card p-10 rounded-3xl group relative overflow-hidden flex flex-col h-full">
-                    <div class="mb-8 relative z-10">
-                        <div class="w-14 h-14 rounded-2xl bg-white dark:bg-obsidian border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6 shadow-sm group-hover:border-intelligence/50 transition-colors">
-                            <i data-lucide="git-commit" class="w-6 h-6 text-gray-800 dark:text-white"></i>
-                        </div>
-                        <h3 class="text-2xl font-medium mb-4 text-gray-900 dark:text-white">Intelligent Routing</h3>
-                        <p class="text-gray-600 dark:text-white/60 leading-relaxed font-light">Connect dependencies with animated wire-like arrows. Our smart pathing algorithms ensure lines never cross awkwardly, keeping complex logic visually coherent.</p>
-                    </div>
-                    <div class="absolute bottom-8 right-8 pointer-events-none w-32 h-16">
-                        <svg width="100%" height="100%" viewBox="0 0 100 50">
-                            <path d="M0 25 Q 50 25, 50 0 T 100 25" fill="none" stroke="currentColor" stroke-width="3" class="text-intelligence/30 dark:text-intelligence/50"></path>
-                            <path d="M0 25 Q 50 25, 50 0 T 100 25" fill="none" stroke="#4F46E5" stroke-width="3" class="path-animated-fast opacity-0 group-hover:opacity-100 transition-opacity duration-300"></path>
-                        </svg>
-                    </div>
                 </div>
-
-                <!-- Phases & Grouping -->
-                <div class="reveal delay-200 glass-card p-10 rounded-3xl group relative overflow-hidden flex flex-col h-full">
-                    <div class="mb-8 relative z-10">
-                        <div class="w-14 h-14 rounded-2xl bg-white dark:bg-obsidian border border-gray-200 dark:border-white/10 flex items-center justify-center mb-6 shadow-sm group-hover:border-intelligence/50 transition-colors">
-                            <i data-lucide="columns" class="w-6 h-6 text-gray-800 dark:text-white"></i>
-                        </div>
-                        <h3 class="text-2xl font-medium mb-4 text-gray-900 dark:text-white">Phases & Grouping</h3>
-                        <p class="text-gray-600 dark:text-white/60 leading-relaxed font-light">Organize chaotic processes into distinct swimlanes and phases. Customize backgrounds with translucent glass or precise blueprint modes to segment operational logic.</p>
-                    </div>
-                    <div class="absolute top-10 right-8 bottom-10 w-24 border-l border-r border-dashed border-gray-300 dark:border-white/20 bg-gray-50/50 dark:bg-white/5 flex flex-col justify-between py-4 px-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                        <div class="w-full h-8 bg-white dark:bg-obsidian rounded border border-gray-200 dark:border-white/10 shadow-sm"></div>
-                        <div class="w-full h-8 bg-white dark:bg-obsidian rounded border border-gray-200 dark:border-white/10 shadow-sm"></div>
-                        <div class="text-[8px] font-mono text-center text-gray-400 mt-2 uppercase tracking-widest">Phase 1</div>
-                    </div>
-                </div>
-
             </div>
+
+            <!-- Phase 3 -->
+            <div class="phase-col">
+                <span class="phase-label" id="label-3">Phase 03. Output</span>
+                <div class="phase-container demo-element" id="container-3">
+                    
+                    <div class="process-node demo-element" id="node-5">
+                        <i class="fa-solid fa-paper-plane node-icon"></i>
+                        <div>
+                            <div class="node-title">Approve & Send</div>
+                            <div class="node-sub">Final Delivery</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
         </div>
-    </section>
+    </div>
 
-    <!-- 3. DEMO PLACEHOLDER (Interactive System Map Mockup) -->
-    <section class="py-32 relative bg-white dark:bg-obsidian overflow-hidden">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="reveal mb-12 md:flex justify-between items-end">
+    <!-- Share Modal Overlay -->
+    <div id="share-modal-overlay" class="fixed inset-0 bg-slate-900/30 backdrop-blur-[2px] z-[100] opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center">
+        <div id="share-modal" class="bg-white rounded-xl shadow-2xl w-[480px] transform scale-95 opacity-0 transition-all duration-300 overflow-hidden border border-slate-200">
+            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
+                <h2 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Share Map</h2>
+                <i class="fa-solid fa-times text-slate-400 cursor-pointer"></i>
+            </div>
+            <div class="p-5 flex flex-col gap-4">
                 <div>
-                    <h2 class="text-3xl md:text-4xl font-medium tracking-tight mb-4 text-gray-900 dark:text-white">Example Process Map</h2>
-                    <p class="text-gray-500 dark:text-white/50 text-lg">A zero-code architecture ready for executive review or direct execution.</p>
-                </div>
-                <div class="hidden md:flex gap-2 text-sm font-medium">
-                    <span class="px-3 py-1.5 rounded-md bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">Glass Mode</span>
-                    <span class="px-3 py-1.5 rounded-md text-gray-500 dark:text-white/50 cursor-pointer hover:text-gray-900 dark:hover:text-white transition-colors">Blueprint</span>
-                </div>
-            </div>
-
-            <!-- Massive Demo Canvas Window -->
-            <div class="reveal delay-100 relative w-full h-[600px] rounded-[2rem] glass-card overflow-hidden border border-gray-200 dark:border-white/10 shadow-2xl flex bg-white/40 dark:bg-[#080808]/40">
-                
-                <!-- Toolbar Simulation -->
-                <div class="absolute top-4 left-4 right-4 h-12 bg-white/80 dark:bg-obsidian/80 backdrop-blur-md rounded-xl border border-gray-200 dark:border-white/10 flex items-center justify-between px-4 z-20">
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
-                        <div class="w-3 h-3 rounded-full bg-amber-400"></div>
-                        <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
-                    </div>
-                    <div class="text-xs font-semibold text-gray-500 dark:text-white/60 tracking-wider">CLIENT_ONBOARDING_FLOW_V2</div>
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="share" class="w-4 h-4 text-gray-500 dark:text-white/60 cursor-pointer hover:text-intelligence"></i>
-                        <i data-lucide="download" class="w-4 h-4 text-gray-500 dark:text-white/60 cursor-pointer hover:text-intelligence"></i>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">Invite people</label>
+                    <div class="flex items-center border border-slate-200 rounded-md px-3 py-2 bg-white ring-1 ring-transparent transition-all" id="invite-ring">
+                        <div id="share-recipient" class="flex-1 text-sm text-slate-700 outline-none min-h-[24px] flex items-center whitespace-pre-wrap"></div>
                     </div>
                 </div>
-
-                <!-- Canvas Background -->
-                <div class="absolute inset-0 bg-grid opacity-40 dark:opacity-20 z-0"></div>
-
-                <!-- Phase Swimlanes Backgrounds -->
-                <div class="absolute top-0 bottom-0 left-[20%] w-[30%] border-x border-dashed border-gray-300 dark:border-white/10 bg-gray-50/30 dark:bg-white/[0.02] z-0">
-                    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-mono text-gray-400 dark:text-gray-500 tracking-widest uppercase">Intake Phase</div>
-                </div>
-                <div class="absolute top-0 bottom-0 left-[50%] w-[40%] border-r border-dashed border-gray-300 dark:border-white/10 bg-intelligence/5 dark:bg-intelligence/[0.02] z-0">
-                    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-mono text-intelligence/50 dark:text-intelligence/50 tracking-widest uppercase">Processing & Approval</div>
-                </div>
-
-                <!-- SVG Paths Container -->
-                <svg class="absolute inset-0 w-full h-full z-10 pointer-events-none">
-                    <!-- Path 1 -->
-                    <path d="M 12% 50% L 26% 50%" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400 dark:text-gray-600 path-animated"></path>
-                    <!-- Path 2 Split -->
-                    <path d="M 34% 50% L 40% 50% L 40% 35% L 55% 35%" fill="none" stroke="currentColor" stroke-width="2" class="text-intelligence opacity-70 path-animated" stroke-linejoin="round"></path>
-                    <path d="M 34% 50% L 40% 50% L 40% 65% L 55% 65%" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400 dark:text-gray-600 path-animated" stroke-linejoin="round"></path>
-                    <!-- Path 3 Rejoin -->
-                    <path d="M 65% 35% L 75% 35% L 75% 50% L 82% 50%" fill="none" stroke="currentColor" stroke-width="2" class="text-intelligence opacity-70 path-animated" stroke-linejoin="round"></path>
-                    <path d="M 65% 65% L 75% 65% L 75% 50% L 82% 50%" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400 dark:text-gray-600 path-animated" stroke-linejoin="round"></path>
-                </svg>
-
-                <!-- Static Mock Nodes -->
-                
-                <!-- Entry -->
-                <div class="absolute top-1/2 left-[10%] -translate-x-1/2 -translate-y-1/2 z-20">
-                    <div class="w-16 h-16 rounded-full bg-white dark:bg-obsidian border border-gray-200 dark:border-white/20 shadow-md flex items-center justify-center cursor-pointer hover:scale-105 transition-transform">
-                        <i data-lucide="mail" class="w-6 h-6 text-gray-500 dark:text-white/60"></i>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">Message (optional)</label>
+                    <div class="border border-slate-200 rounded-md p-3 bg-white h-[90px] ring-1 ring-transparent transition-all" id="msg-ring">
+                        <div id="share-message" class="text-sm text-slate-700 outline-none h-full relative w-full overflow-hidden"></div>
                     </div>
                 </div>
-
-                <!-- Logic Filter -->
-                <div class="absolute top-1/2 left-[30%] -translate-x-1/2 -translate-y-1/2 z-20">
-                    <div class="w-32 h-16 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/20 rounded-xl shadow-lg flex items-center justify-between px-3 cursor-pointer hover:border-intelligence/50 transition-colors">
-                        <div class="w-8 h-8 rounded bg-gray-100 dark:bg-white/5 flex items-center justify-center">
-                            <i data-lucide="filter" class="w-4 h-4 text-gray-600 dark:text-white/70"></i>
-                        </div>
-                        <div class="flex flex-col text-right">
-                            <span class="text-[10px] text-gray-400">Rule Check</span>
-                            <span class="text-xs font-semibold text-gray-800 dark:text-white">Verify KYC</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Top Path: Automated -->
-                <div class="absolute top-[35%] left-[60%] -translate-x-1/2 -translate-y-1/2 z-20">
-                    <div class="w-36 h-16 bg-white dark:bg-[#111] border border-emerald-500/30 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.1)] flex items-center justify-between px-3 cursor-pointer hover:scale-105 transition-transform relative">
-                        <div class="absolute -top-2 -right-2 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white dark:border-obsidian">
-                            <i data-lucide="zap" class="w-3 h-3 text-white"></i>
-                        </div>
-                        <div class="w-8 h-8 rounded bg-emerald-500/10 flex items-center justify-center">
-                            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
-                        </div>
-                        <div class="flex flex-col text-right">
-                            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Automated</span>
-                            <span class="text-xs font-semibold text-gray-800 dark:text-white">Fast Track</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bottom Path: Manual Review -->
-                <div class="absolute top-[65%] left-[60%] -translate-x-1/2 -translate-y-1/2 z-20">
-                    <div class="w-36 h-16 bg-white dark:bg-[#111] border border-amber-500/30 rounded-xl shadow-[0_4px_20px_rgba(245,158,11,0.1)] flex items-center justify-between px-3 cursor-pointer hover:scale-105 transition-transform">
-                        <div class="w-8 h-8 rounded bg-amber-500/10 flex items-center justify-center">
-                            <i data-lucide="user-search" class="w-4 h-4 text-amber-600 dark:text-amber-400"></i>
-                        </div>
-                        <div class="flex flex-col text-right">
-                            <span class="text-[10px] text-amber-600 dark:text-amber-400 font-medium">Exception</span>
-                            <span class="text-xs font-semibold text-gray-800 dark:text-white">Compliance</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Final Endpoint -->
-                <div class="absolute top-1/2 left-[86%] -translate-x-1/2 -translate-y-1/2 z-20">
-                    <div class="w-16 h-16 rounded-full bg-intelligence border border-intelligence-light/50 shadow-[0_0_30px_rgba(79,70,229,0.4)] flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
-                        <i data-lucide="database" class="w-6 h-6 text-white"></i>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- 4. INTEGRATION SECTION -->
-    <section class="py-24 relative bg-gray-50/80 dark:bg-[#0a0a0a] border-t border-gray-200 dark:border-white/5">
-        <div class="max-w-4xl mx-auto px-6 text-center">
-            <h2 class="reveal text-2xl md:text-3xl font-medium tracking-tight mb-6 text-gray-900 dark:text-white">Zero Design Effort. <span class="text-intelligence">Infinite Execution.</span></h2>
-            <p class="reveal delay-100 text-lg text-gray-600 dark:text-white/60 mb-10 font-light leading-relaxed">
-                Signal Map is just the beginning of the system. Connect your blueprints seamlessly into <strong class="text-gray-900 dark:text-white font-medium">Signal Plan</strong> for scenario simulation, and push them directly to <strong class="text-gray-900 dark:text-white font-medium">Signal Automate</strong> to execute the logic without writing code.
-            </p>
-            <div class="reveal delay-200 flex items-center justify-center gap-6">
-                <div class="flex flex-col items-center gap-2 group cursor-pointer">
-                    <div class="w-12 h-12 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center shadow-sm group-hover:border-intelligence transition-colors">
-                        <i data-lucide="calendar" class="w-5 h-5 text-gray-500 dark:text-white/60 group-hover:text-intelligence transition-colors"></i>
-                    </div>
-                    <span class="text-xs font-semibold text-gray-500 dark:text-white/50 uppercase tracking-widest">Plan</span>
-                </div>
-                <div class="w-8 h-px bg-gray-300 dark:bg-white/20"></div>
-                <div class="flex flex-col items-center gap-2 group cursor-pointer">
-                    <div class="w-12 h-12 rounded-full bg-intelligence shadow-[0_0_15px_rgba(79,70,229,0.3)] flex items-center justify-center">
-                        <i data-lucide="git-merge" class="w-5 h-5 text-white"></i>
-                    </div>
-                    <span class="text-xs font-bold text-intelligence uppercase tracking-widest">Map</span>
-                </div>
-                <div class="w-8 h-px bg-gray-300 dark:bg-white/20"></div>
-                <div class="flex flex-col items-center gap-2 group cursor-pointer">
-                    <div class="w-12 h-12 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center shadow-sm group-hover:border-intelligence transition-colors">
-                        <i data-lucide="zap" class="w-5 h-5 text-gray-500 dark:text-white/60 group-hover:text-intelligence transition-colors"></i>
-                    </div>
-                    <span class="text-xs font-semibold text-gray-500 dark:text-white/50 uppercase tracking-widest">Automate</span>
+                <div class="flex justify-end mt-2">
+                    <button id="btn-send-invite" class="bg-[#4285F4] text-white px-5 py-2 rounded-md text-sm font-semibold hover:bg-blue-600 transition shadow-sm flex items-center gap-2">
+                        Send Invite <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- 5. FINAL CTA SECTION -->
-    <section id="cta" class="py-40 relative border-t border-gray-200 dark:border-white/5 overflow-hidden bg-white dark:bg-transparent">
-        <!-- Deep Space Gradient -->
-        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[800px] h-[500px] bg-intelligence opacity-10 dark:opacity-20 blur-[150px] rounded-[100%] pointer-events-none"></div>
-        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[400px] h-[300px] bg-black dark:bg-white opacity-5 blur-[100px] rounded-[100%] pointer-events-none"></div>
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[110] flex flex-col gap-3 pointer-events-none"></div>
 
-        <div class="max-w-3xl mx-auto px-6 text-center relative z-10">
-            <h2 class="reveal text-5xl md:text-7xl font-medium tracking-tighter mb-6 text-gray-900 dark:text-white">Your system is mapped.<br><span class="shimmer-text">Ready to run it?</span></h2>
-            <p class="reveal delay-100 text-xl text-gray-600 dark:text-white/60 mb-12 font-light">Join thousands of operators designing complex systems effortlessly.</p>
-            
-            <div class="reveal delay-200">
-                <a href="#" class="inline-flex items-center justify-center px-12 py-4 bg-gray-900 dark:bg-white text-white dark:text-black font-medium rounded-full hover:bg-gray-800 dark:hover:bg-white/90 transition-all text-lg shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_0_60px_rgba(255,255,255,0.3)]">
-                    Start Designing Your System
-                </a>
-            </div>
-        </div>
-    </section>
+    <!-- Simulated Cursor -->
+    <div class="demo-cursor" id="demo-cursor">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4.5 3L19.5 10.5L12 12.5L9.5 20.5L4.5 3Z" fill="#1e293b" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <div class="cursor-ghost" id="cursor-ghost">Adding Node...</div>
+    </div>
 
-    <!-- Minimal Footer -->
-    <footer class="py-8 border-t border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-[#050505] relative z-10 transition-colors">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            
-            <!-- Scaled Wordmark Lockup -->
-            <div style="width: 100px; height: 44px; position: relative;">
-                <div style="display: flex; align-items: center; gap: 14px; transform: scale(0.75); transform-origin: top left; position: absolute; top: 0; left: 0;">
-                    <a href="index.html" class="brand-group" aria-label="Signal HQ Home">
-                        <div class="word-mark">
-                            <span style="font-weight: 700; letter-spacing: -0.05em;">Signal</span><span style="font-weight: 300; margin-left: 6px; letter-spacing: 0;">HQ</span><span class="signal-dot"></span>
-                        </div>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-8 text-sm text-gray-500 dark:text-white/40">
-                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Documentation</a>
-                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Ethics</a>
-                <a href="signal_services.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Consulting</a>
-                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Contact</a>
-            </div>
-            
-            <div class="text-xs text-gray-400 dark:text-white/30">
-                &copy; 2026 Signal Intelligence. All rights reserved.
-            </div>
-        </div>
-    </footer>
-
-    <!-- Scripts -->
     <script>
-        // Initialize Lucide Icons
-        lucide.createIcons();
+        const sleep = ms => new Promise(res => setTimeout(res, ms));
 
-        // --- FLUID DARK MODE TOGGLE ---
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const htmlElement = document.documentElement;
-
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            htmlElement.classList.add('dark');
-        } else {
-            htmlElement.classList.remove('dark');
+        // Get absolute coordinates for an element to drive the cursor perfectly
+        function getCenter(id) {
+            const el = document.getElementById(id);
+            if (!el) return {x: 0, y: 0};
+            const r = el.getBoundingClientRect();
+            // Cursor is fixed, so getBoundingClientRect (viewport coords) works perfectly without scroll offsets.
+            return {
+                x: r.left + (r.width / 2),
+                y: r.top + (r.height / 2)
+            };
         }
 
-        themeToggleBtn.addEventListener('click', () => {
-            htmlElement.classList.toggle('dark');
-            if (htmlElement.classList.contains('dark')) {
-                localStorage.setItem('theme', 'dark');
-            } else {
-                localStorage.setItem('theme', 'light');
+        // Specifically get connection points for lines (viewport relative to match absolute SVG on unscrollable body)
+        function getEdge(id, edge) {
+            const el = document.getElementById(id);
+            const r = el.getBoundingClientRect();
+            if(edge === 'right') return { x: r.right, y: r.top + r.height/2 };
+            if(edge === 'left') return { x: r.left, y: r.top + r.height/2 };
+            if(edge === 'bottom') return { x: r.left + r.width/2, y: r.bottom };
+            if(edge === 'top') return { x: r.left + r.width/2, y: r.top };
+        }
+
+        const cursor = document.getElementById('demo-cursor');
+        const ghost = document.getElementById('cursor-ghost');
+
+        // Move cursor to specific coordinates
+        async function moveCursorTo(x, y, speedStr = '0.6s') {
+            cursor.style.transitionDuration = speedStr;
+            cursor.style.transform = `translate(${x}px, ${y}px)`;
+            const waitTime = parseFloat(speedStr) * 1000;
+            await sleep(waitTime);
+        }
+
+        // Move cursor to the center of an element
+        async function moveCursorToEl(id, speedStr = '0.6s') {
+            const pt = getCenter(id);
+            await moveCursorTo(pt.x, pt.y, speedStr);
+        }
+
+        // Simulate a physical click
+        async function simulateClick() {
+            cursor.classList.add('clicking');
+            await sleep(150);
+            cursor.classList.remove('clicking');
+            await sleep(100);
+        }
+
+        // Calculate and set SVG path between two points
+        function setLinePath(lineId, p1, p2) {
+            const line = document.getElementById(lineId);
+            const midX = p1.x + (p2.x - p1.x) / 2;
+            const d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`;
+            line.setAttribute('d', d);
+            
+            // Set up stroke dash for drawing animation
+            const len = line.getTotalLength();
+            line.style.strokeDasharray = `${len}, ${len}`;
+            line.style.strokeDashoffset = len;
+            return len;
+        }
+
+        function setActiveTool(id) {
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            if(id) document.getElementById(id).classList.add('active');
+        }
+
+        // Type text into a div with a blinking caret effect
+        async function typeTextDiv(id, text) {
+            const el = document.getElementById(id);
+            el.classList.add('typing-caret-div');
+            el.innerHTML = '';
+            for (let i = 0; i < text.length; i++) {
+                el.innerHTML += text.charAt(i);
+                await sleep(20 + Math.random() * 40);
+            }
+            await sleep(200);
+            el.classList.remove('typing-caret-div');
+        }
+
+        // Show elegant toast notification
+        function showToast(title, message) {
+            const toast = document.createElement('div');
+            toast.className = 'bg-slate-800 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-300';
+            toast.innerHTML = `
+                <div class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center shrink-0"><i class="fa-solid fa-check text-xs"></i></div>
+                <div>
+                    <div class="text-sm font-bold">${title}</div>
+                    <div class="text-xs text-slate-300">${message}</div>
+                </div>
+            `;
+            document.getElementById('toast-container').appendChild(toast);
+            
+            setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 50);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // --- CORE ANIMATION SEQUENCE ---
+        async function runManualBuildDemo() {
+            // --- Reset State ---
+            document.querySelectorAll('.demo-element, .phase-label').forEach(el => {
+                el.classList.remove('visible', 'styled-green', 'styled-blue', 'colored-blue', 'colored-green', 'colored-orange', 'colored-red');
+            });
+            document.querySelectorAll('.connector-line').forEach(line => {
+                line.classList.remove('drawn');
+                line.setAttribute('d', '');
+            });
+            
+            const titleEl = document.getElementById('map-title');
+            titleEl.innerText = 'Untitled Process';
+            titleEl.classList.remove('typing-caret');
+            
+            // Reset Modal UI
+            document.getElementById('share-modal-overlay').classList.add('pointer-events-none', 'opacity-0');
+            document.getElementById('share-modal-overlay').classList.remove('opacity-100');
+            document.getElementById('share-modal').classList.add('scale-95', 'opacity-0');
+            document.getElementById('share-modal').classList.remove('scale-100', 'opacity-100');
+            document.getElementById('share-recipient').innerHTML = '';
+            document.getElementById('share-message').innerHTML = '';
+
+            cursor.classList.remove('carrying');
+            setActiveTool('tool-select');
+            await sleep(1000);
+
+            // --- STEP 0: Type out the Title ---
+            await moveCursorToEl('map-title', '0.7s');
+            await simulateClick();
+            
+            titleEl.classList.add('typing-caret');
+            await sleep(300);
+            
+            titleEl.innerText = '';
+            const newTitle = "Basic Workflow Demo";
+            for (let i = 0; i < newTitle.length; i++) {
+                titleEl.innerText += newTitle.charAt(i);
+                await sleep(30 + Math.random() * 50); 
+            }
+            
+            await sleep(300);
+            titleEl.classList.remove('typing-caret');
+
+            // --- STEP 1: Draw Phase 1 Container ---
+            await moveCursorToEl('tool-container', '0.6s');
+            await simulateClick();
+            setActiveTool('tool-container');
+            cursor.classList.add('carrying');
+            ghost.innerText = "New Phase";
+
+            const containerPlaceholderY = document.getElementById('label-1').getBoundingClientRect().bottom + window.scrollY + 60;
+            const containerPlaceholderX = document.getElementById('label-1').getBoundingClientRect().left + window.scrollX + 140;
+            
+            await moveCursorTo(containerPlaceholderX, containerPlaceholderY, '0.7s'); 
+            await simulateClick();
+            cursor.classList.remove('carrying');
+            setActiveTool('tool-select');
+            
+            document.getElementById('label-1').classList.add('visible');
+            document.getElementById('container-1').classList.add('visible');
+            document.getElementById('add-btn-1').classList.add('visible');
+            await sleep(400);
+
+            // --- STEP 2: Use In-Container "+" Button to add Nodes ---
+            await moveCursorToEl('add-btn-1', '0.6s');
+            document.getElementById('add-btn-1').classList.add('hovered');
+            await simulateClick();
+            document.getElementById('add-btn-1').classList.remove('hovered');
+            document.getElementById('node-1').classList.add('visible');
+            await sleep(300);
+
+            await moveCursorToEl('add-btn-1', '0.4s');
+            document.getElementById('add-btn-1').classList.add('hovered');
+            await simulateClick();
+            document.getElementById('add-btn-1').classList.remove('hovered');
+            document.getElementById('node-2').classList.add('visible');
+            await sleep(400);
+
+            // --- STEP 3: Change Node Colors ---
+            await moveCursorToEl('color-blue', '0.6s');
+            await simulateClick();
+            await moveCursorToEl('node-1', '0.6s');
+            await simulateClick();
+            document.getElementById('node-1').classList.add('colored-blue');
+            
+            await moveCursorToEl('color-red', '0.6s');
+            await simulateClick();
+            await moveCursorToEl('node-2', '0.4s');
+            await simulateClick();
+            document.getElementById('node-2').classList.add('colored-red');
+            await sleep(300);
+
+            await moveCursorToEl('color-green', '0.5s');
+            await simulateClick();
+            const ptC1 = getCenter('container-1');
+            await moveCursorTo(ptC1.x, ptC1.y - 120, '0.5s'); 
+            await simulateClick();
+            document.getElementById('container-1').classList.add('styled-green');
+            await sleep(500);
+
+            // --- STEP 4: Draw Phase 2 & Phase 3 ---
+            document.getElementById('label-2').classList.add('visible');
+            document.getElementById('container-2').classList.add('visible');
+            document.getElementById('container-2').classList.add('styled-blue');
+            await sleep(200);
+            document.getElementById('node-3').classList.add('visible', 'colored-green');
+            document.getElementById('node-4').classList.add('visible', 'colored-orange');
+            
+            await sleep(300);
+            document.getElementById('label-3').classList.add('visible');
+            document.getElementById('container-3').classList.add('visible');
+            document.getElementById('node-5').classList.add('visible', 'colored-blue');
+            
+            await sleep(600);
+
+            // --- STEP 5: Draw Connecting Lines Manually ---
+            await moveCursorToEl('tool-line', '0.5s');
+            await simulateClick();
+            setActiveTool('tool-line');
+
+            const p1 = getEdge('node-1', 'right');
+            const p3 = getEdge('node-3', 'left');
+            await moveCursorTo(p1.x, p1.y, '0.5s');
+            cursor.classList.add('clicking');
+            await sleep(100);
+            setLinePath('line-1', p1, p3);
+            const line1 = document.getElementById('line-1');
+            cursor.style.transitionDuration = '0.6s';
+            line1.style.transitionDuration = '0.6s';
+            cursor.style.transform = `translate(${p3.x}px, ${p3.y}px)`;
+            line1.style.strokeDashoffset = 0;
+            await sleep(600);
+            cursor.classList.remove('clicking'); 
+            line1.classList.add('drawn'); 
+            await sleep(300);
+
+            const p2 = getEdge('node-2', 'right');
+            await moveCursorTo(p2.x, p2.y, '0.4s');
+            cursor.classList.add('clicking');
+            await sleep(100);
+            setLinePath('line-2', p2, p3);
+            const line2 = document.getElementById('line-2');
+            cursor.style.transitionDuration = '0.5s';
+            line2.style.transitionDuration = '0.5s';
+            cursor.style.transform = `translate(${p3.x}px, ${p3.y}px)`;
+            line2.style.strokeDashoffset = 0;
+            await sleep(500);
+            cursor.classList.remove('clicking');
+            line2.classList.add('drawn');
+            await sleep(300);
+
+            const p4 = getEdge('node-4', 'right');
+            const p5 = getEdge('node-5', 'left');
+            await moveCursorTo(p4.x, p4.y, '0.4s');
+            cursor.classList.add('clicking');
+            await sleep(100);
+            setLinePath('line-3', p4, p5);
+            const line3 = document.getElementById('line-3');
+            cursor.style.transitionDuration = '0.6s';
+            line3.style.transitionDuration = '0.6s';
+            cursor.style.transform = `translate(${p5.x}px, ${p5.y}px)`;
+            line3.style.strokeDashoffset = 0;
+            await sleep(600);
+            cursor.classList.remove('clicking');
+            line3.classList.add('drawn');
+
+            setActiveTool('tool-select');
+            
+            // --- STEP 6: SHARE AND COLLABORATE FLOW ---
+            await sleep(600);
+            
+            // Move to Share Button
+            await moveCursorToEl('btn-share', '0.8s');
+            await simulateClick();
+            
+            // Open Modal
+            document.getElementById('share-modal-overlay').classList.remove('pointer-events-none', 'opacity-0');
+            document.getElementById('share-modal-overlay').classList.add('opacity-100');
+            document.getElementById('share-modal').classList.remove('scale-95', 'opacity-0');
+            document.getElementById('share-modal').classList.add('scale-100', 'opacity-100');
+            await sleep(600);
+
+            // Type Recipient
+            await moveCursorToEl('share-recipient', '0.5s');
+            await simulateClick();
+            document.getElementById('invite-ring').classList.add('ring-blue-400');
+            await typeTextDiv('share-recipient', 'Dave');
+            
+            // Resolve to a styled user pill
+            document.getElementById('share-recipient').innerHTML = `<span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md flex items-center gap-1.5 border border-blue-200 font-medium w-max shadow-sm"><img src="https://i.pravatar.cc/100?img=11" class="w-4 h-4 rounded-full"> Dave</span>`;
+            document.getElementById('invite-ring').classList.remove('ring-blue-400');
+            await sleep(300);
+
+            // Type Message
+            await moveCursorToEl('share-message', '0.5s');
+            await simulateClick();
+            document.getElementById('msg-ring').classList.add('ring-blue-400');
+            await typeTextDiv('share-message', 'Hey Dave, could you take a look at this process map and add the QA steps?');
+            document.getElementById('msg-ring').classList.remove('ring-blue-400');
+            await sleep(400);
+
+            // Send Invite
+            await moveCursorToEl('btn-send-invite', '0.6s');
+            await simulateClick();
+            
+            // Close Modal & Toast
+            document.getElementById('share-modal-overlay').classList.add('pointer-events-none', 'opacity-0');
+            document.getElementById('share-modal-overlay').classList.remove('opacity-100');
+            document.getElementById('share-modal').classList.add('scale-95', 'opacity-0');
+            document.getElementById('share-modal').classList.remove('scale-100', 'opacity-100');
+            
+            showToast("Invite Sent", "Dave has been invited to collaborate.");
+
+            // Move cursor off screen to admire the work
+            await moveCursorTo(window.innerWidth + 50, window.innerHeight + 50, '1s');
+
+            // Wait, then loop
+            await sleep(6000);
+            runManualBuildDemo();
+        }
+
+        // Setup and Start
+        window.onload = () => {
+            setTimeout(runManualBuildDemo, 800);
+        };
+
+        // Redraw paths correctly on window resize
+        window.addEventListener('resize', () => {
+            const line1 = document.getElementById('line-1');
+            if (line1.classList.contains('drawn')) {
+                setLinePath('line-1', getEdge('node-1', 'right'), getEdge('node-3', 'left'));
+                setLinePath('line-2', getEdge('node-2', 'right'), getEdge('node-3', 'left'));
+                setLinePath('line-3', getEdge('node-4', 'right'), getEdge('node-5', 'left'));
+                document.querySelectorAll('.connector-line').forEach(l => l.style.strokeDashoffset = 0);
             }
         });
 
-        // --- SCROLL-TRIGGERED REVEAL ANIMATIONS ---
-        const revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                }
-            });
-        }, { 
-            threshold: 0.1, 
-            rootMargin: "0px 0px -50px 0px" 
-        });
-
-        document.querySelectorAll('.reveal').forEach((el) => {
-            revealObserver.observe(el);
-        });
-
-        // --- INTERACTIVE 3D TILT ON PRODUCT CARDS ---
-        document.querySelectorAll('.glass-card').forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                
-                const rotateX = ((y - centerY) / centerY) * -6; 
-                const rotateY = ((x - centerX) / centerX) * 6;
-                
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)`;
-            });
-        });
-
-        // --- AMBIENT GLOW MOUSE TRACKING ---
-        const glow = document.getElementById('glow');
-        let isMouseMoving = false;
-        let glowTimeout;
-
-        document.addEventListener('mousemove', (e) => {
-            isMouseMoving = true;
-            
-            requestAnimationFrame(() => {
-                glow.style.left = e.clientX + 'px';
-                glow.style.top = e.clientY + 'px';
-                glow.style.opacity = '1';
-            });
-
-            clearTimeout(glowTimeout);
-            glowTimeout = setTimeout(() => {
-                glow.style.opacity = '0.5';
-            }, 500);
-        });
-
-        document.addEventListener('mouseleave', () => {
-            glow.style.opacity = '0';
-        });
-
-        // --- NAVBAR SCROLL EFFECT ---
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-        });
     </script>
 </body>
 </html>
